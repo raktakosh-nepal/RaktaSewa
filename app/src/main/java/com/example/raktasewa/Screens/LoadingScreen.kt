@@ -574,6 +574,9 @@ fun BloodDropWithOrbits(bloodType: String) {
 
             // Draw particles with glow effects
             particles.forEach { particle ->
+                // Ensure particle size is always valid (> 0)
+                val safeSize = particle.size.coerceAtLeast(0.1f)
+
                 // Outer glow
                 drawCircle(
                     brush = Brush.radialGradient(
@@ -581,24 +584,24 @@ fun BloodDropWithOrbits(bloodType: String) {
                             particle.color.copy(alpha = particle.alpha * 0.4f),
                             Color.Transparent
                         ),
-                        radius = particle.size * 3f
+                        radius = safeSize * 3f
                     ),
                     center = androidx.compose.ui.geometry.Offset(particle.x, particle.y),
-                    radius = particle.size * 3f
+                    radius = safeSize * 3f
                 )
 
                 // Main particle
                 drawCircle(
                     color = particle.color.copy(alpha = particle.alpha),
                     center = androidx.compose.ui.geometry.Offset(particle.x, particle.y),
-                    radius = particle.size
+                    radius = safeSize
                 )
 
                 // Inner bright core
                 drawCircle(
                     color = Color.White.copy(alpha = particle.alpha * 0.7f),
                     center = androidx.compose.ui.geometry.Offset(particle.x, particle.y),
-                    radius = particle.size * 0.4f
+                    radius = safeSize * 0.4f
                 )
             }
 
@@ -609,6 +612,9 @@ fun BloodDropWithOrbits(bloodType: String) {
                 val x = centerX + cos(angle).toFloat() * outerRadius
                 val y = centerY + sin(angle).toFloat() * outerRadius
 
+                // Ensure safe radius values
+                val safeCircleScale = circleScale.coerceAtLeast(0.1f)
+
                 // Glow halo
                 drawCircle(
                     brush = Brush.radialGradient(
@@ -617,23 +623,23 @@ fun BloodDropWithOrbits(bloodType: String) {
                             Color(0xFFFFA0A0).copy(alpha = circleOpacity * 0.3f),
                             Color.Transparent
                         ),
-                        radius = 25f * circleScale
+                        radius = 25f * safeCircleScale
                     ),
                     center = androidx.compose.ui.geometry.Offset(x, y),
-                    radius = 25f * circleScale
+                    radius = 25f * safeCircleScale
                 )
 
                 // Main circle
                 drawCircle(
                     color = Color(0xFFFFA0A0).copy(alpha = circleOpacity * 0.8f),
-                    radius = 12f * circleScale,
+                    radius = 12f * safeCircleScale,
                     center = androidx.compose.ui.geometry.Offset(x, y)
                 )
 
                 // Inner bright core
                 drawCircle(
                     color = Color.White.copy(alpha = circleOpacity * 0.6f),
-                    radius = 6f * circleScale,
+                    radius = 6f * safeCircleScale,
                     center = androidx.compose.ui.geometry.Offset(x, y)
                 )
             }
@@ -646,6 +652,9 @@ fun BloodDropWithOrbits(bloodType: String) {
                 val y = centerY + sin(angle).toFloat() * middleRadius
                 val circleSize = if (i % 2 == 0) 18f else 16f
 
+                // Ensure safe radius values
+                val safeCircleScale = circleScale.coerceAtLeast(0.1f)
+
                 // Chromatic glow (multi-color halo)
                 drawCircle(
                     brush = Brush.radialGradient(
@@ -654,23 +663,23 @@ fun BloodDropWithOrbits(bloodType: String) {
                             Color(0xFFFFB8B8).copy(alpha = circleOpacity * 0.4f),
                             Color.Transparent
                         ),
-                        radius = 30f * circleScale
+                        radius = 30f * safeCircleScale
                     ),
                     center = androidx.compose.ui.geometry.Offset(x, y),
-                    radius = 30f * circleScale
+                    radius = 30f * safeCircleScale
                 )
 
                 // Main circle
                 drawCircle(
                     color = Color(0xFFFFB8B8).copy(alpha = circleOpacity),
-                    radius = circleSize * circleScale,
+                    radius = circleSize * safeCircleScale,
                     center = androidx.compose.ui.geometry.Offset(x, y)
                 )
 
                 // Inner core
                 drawCircle(
                     color = Color.White.copy(alpha = circleOpacity * 0.8f),
-                    radius = (circleSize * 0.5f) * circleScale,
+                    radius = (circleSize * 0.5f) * safeCircleScale,
                     center = androidx.compose.ui.geometry.Offset(x, y)
                 )
             }
@@ -682,6 +691,9 @@ fun BloodDropWithOrbits(bloodType: String) {
                 val x = centerX + cos(angle).toFloat() * innerRadius
                 val y = centerY + sin(angle).toFloat() * innerRadius
 
+                // Ensure safe radius values
+                val safeCircleScale = circleScale.coerceAtLeast(0.1f)
+
                 // Intense energy glow
                 drawCircle(
                     brush = Brush.radialGradient(
@@ -690,23 +702,23 @@ fun BloodDropWithOrbits(bloodType: String) {
                             Color(0xFFFFD0D0).copy(alpha = circleOpacity * 0.5f),
                             Color.Transparent
                         ),
-                        radius = 35f * circleScale
+                        radius = 35f * safeCircleScale
                     ),
                     center = androidx.compose.ui.geometry.Offset(x, y),
-                    radius = 35f * circleScale
+                    radius = 35f * safeCircleScale
                 )
 
                 // Main circle
                 drawCircle(
                     color = Color(0xFFFFD0D0).copy(alpha = circleOpacity * 0.9f),
-                    radius = 12f * circleScale,
+                    radius = 12f * safeCircleScale,
                     center = androidx.compose.ui.geometry.Offset(x, y)
                 )
 
                 // Bright white core
                 drawCircle(
                     color = Color.White.copy(alpha = circleOpacity),
-                    radius = 7f * circleScale,
+                    radius = 7f * safeCircleScale,
                     center = androidx.compose.ui.geometry.Offset(x, y)
                 )
             }
