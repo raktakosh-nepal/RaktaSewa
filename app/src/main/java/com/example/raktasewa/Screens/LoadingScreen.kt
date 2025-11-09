@@ -85,7 +85,7 @@ fun LoadingScreen(backStack: SnapshotStateList<AllScreens>, text: String, bloodT
                                 if (response.isSuccessful && response.body() != null) {
                                     val bloodBanks = response.body()!!
                                     // Navigate to results screen
-                                    backStack.add(AllScreens.BloodBanksResultScreen(bloodBanks, language))
+                                    backStack.add(AllScreens.BloodBanksResultScreen(bloodBanks, latitude, longitude, language))
                                 } else {
                                     Toast.makeText(
                                         context,

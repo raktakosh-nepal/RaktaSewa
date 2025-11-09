@@ -8,6 +8,7 @@ import androidx.navigation3.runtime.NavEntry
 
 
 import androidx.navigation3.ui.NavDisplay
+import com.example.raktasewa.Screens.BloodBankDetailScreen
 import com.example.raktasewa.Screens.BloodBanksResultScreen
 import com.example.raktasewa.Screens.HomeScreen
 import com.example.raktasewa.Screens.WelcomeScreen
@@ -30,7 +31,10 @@ fun Nav() {
                     LoadingScreen(backstack, key.message, key.bloodType, key.language)
                 }
                 is AllScreens.BloodBanksResultScreen -> NavEntry(key){
-                    BloodBanksResultScreen(backstack, key.bloodBanks, key.language)
+                    BloodBanksResultScreen(backstack, key.bloodBanks, key.userLatitude, key.userLongitude, key.language)
+                }
+                is AllScreens.BloodBankDetailScreen -> NavEntry(key){
+                    BloodBankDetailScreen(backstack, key.bloodBank, key.userLatitude, key.userLongitude, key.language)
                 }
             }
         }
