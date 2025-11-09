@@ -257,45 +257,67 @@ fun LoadingScreen(backStack: SnapshotStateList<AllScreens>, text: String, bloodT
 fun BloodDropWithOrbits(bloodType: String) {
     val infiniteTransition = rememberInfiniteTransition(label = "")
 
-    // Main rotation for orbiting circles
+    // Main rotation for orbiting circles - faster!
     val rotation by infiniteTransition.animateFloat(
         initialValue = 0f,
         targetValue = 360f,
         animationSpec = infiniteRepeatable(
-            animation = tween(3000, easing = LinearEasing),
+            animation = tween(2000, easing = LinearEasing), // Faster rotation
             repeatMode = RepeatMode.Restart
         ),
         label = ""
     )
 
-    // Pulsing effect for center badge
+    // More dynamic pulsing effect for center badge
     val badgeScale by infiniteTransition.animateFloat(
-        initialValue = 0.95f,
-        targetValue = 1.05f,
+        initialValue = 0.9f,
+        targetValue = 1.1f, // More pronounced
         animationSpec = infiniteRepeatable(
-            animation = tween(1500, easing = EaseInOutCubic),
+            animation = tween(1000, easing = EaseInOutCubic), // Faster pulse
             repeatMode = RepeatMode.Reverse
         ),
         label = ""
     )
 
-    // Pulsing opacity for circles
+    // More dynamic pulsing opacity for circles
     val circleOpacity by infiniteTransition.animateFloat(
-        initialValue = 0.4f,
-        targetValue = 0.8f,
+        initialValue = 0.3f,
+        targetValue = 0.9f, // Wider range
         animationSpec = infiniteRepeatable(
-            animation = tween(1200, easing = EaseInOutSine),
+            animation = tween(800, easing = EaseInOutSine), // Faster pulse
             repeatMode = RepeatMode.Reverse
         ),
         label = ""
     )
 
-    // Inner ring rotation (opposite direction)
+    // Inner ring rotation (opposite direction) - faster!
     val innerRotation by infiniteTransition.animateFloat(
         initialValue = 360f,
         targetValue = 0f,
         animationSpec = infiniteRepeatable(
-            animation = tween(4000, easing = LinearEasing),
+            animation = tween(2500, easing = LinearEasing), // Faster rotation
+            repeatMode = RepeatMode.Restart
+        ),
+        label = ""
+    )
+
+    // Add pulsing scale for circles
+    val circleScale by infiniteTransition.animateFloat(
+        initialValue = 0.9f,
+        targetValue = 1.1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(900, easing = EaseInOutSine),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = ""
+    )
+
+    // Add third ring rotation
+    val outerRotation by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 360f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(3500, easing = LinearEasing),
             repeatMode = RepeatMode.Restart
         ),
         label = ""
@@ -305,7 +327,26 @@ fun BloodDropWithOrbits(bloodType: String) {
         modifier = Modifier.size(300.dp),
         contentAlignment = Alignment.Center
     ) {
-        // Outer orbiting circles (4 circles)
+        // Outermost orbiting circles (6 circles) - new!
+        Canvas(modifier = Modifier.size(280.dp)) {
+            val centerX = size.width / 2
+            val centerY = size.height / 2
+            val radius = 120f
+
+            for (i in 0..5) {
+                val angle = (outerRotation + i * 60) * Math.PI / 180
+                val x = centerX + cos(angle).toFloat() * radius
+                val y = centerY + sin(angle).toFloat() * radius
+
+                drawCircle(
+                    color = Color(0xFFFFA0A0).copy(alpha = circleOpacity * 0.5f),
+                    radius = 12f * circleScale,
+                    center = androidx.compose.ui.geometry.Offset(x, y)
+                )
+            }
+        }
+
+        // Middle orbiting circles (4 circles) - enhanced with scale
         Canvas(modifier = Modifier.size(260.dp)) {
             val centerX = size.width / 2
             val centerY = size.height / 2
@@ -316,18 +357,18 @@ fun BloodDropWithOrbits(bloodType: String) {
                 val x = centerX + cos(angle).toFloat() * radius
                 val y = centerY + sin(angle).toFloat() * radius
 
-                // Varying sizes for more dynamic effect
-                val circleSize = if (i % 2 == 0) 16f else 14f
+                // Varying sizes with pulsing scale for more dynamic effect
+                val circleSize = if (i % 2 == 0) 18f else 16f
 
                 drawCircle(
                     color = Color(0xFFFFB8B8).copy(alpha = circleOpacity),
-                    radius = circleSize,
+                    radius = circleSize * circleScale,
                     center = androidx.compose.ui.geometry.Offset(x, y)
                 )
             }
         }
 
-        // Inner orbiting circles (3 circles, smaller and faster)
+        // Inner orbiting circles (3 circles, smaller and faster) - enhanced
         Canvas(modifier = Modifier.size(200.dp)) {
             val centerX = size.width / 2
             val centerY = size.height / 2
@@ -340,7 +381,7 @@ fun BloodDropWithOrbits(bloodType: String) {
 
                 drawCircle(
                     color = Color(0xFFFFD0D0).copy(alpha = circleOpacity * 0.7f),
-                    radius = 10f,
+                    radius = 12f * circleScale,
                     center = androidx.compose.ui.geometry.Offset(x, y)
                 )
             }
