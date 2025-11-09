@@ -195,21 +195,21 @@ fun WelcomeScreen(backStack: SnapshotStateList<AllScreens>) {
                 ) {
                     Text(
                         text = "RaktaSewa",
-                        fontSize = 48.sp,
-                        fontWeight = FontWeight.Black,
+                        fontSize = 38.sp,
+                        fontWeight = FontWeight.ExtraBold,
                         fontFamily = Fonts.ManropeFamily,
                         color = Color(0xFFDC3545),
-                        letterSpacing = (-1.5).sp
+                        letterSpacing = (-1).sp
                     )
 
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(6.dp))
 
                     Text(
                         text = "Your Life-Saving Partner",
-                        fontSize = 15.sp,
+                        fontSize = 13.sp,
                         fontWeight = FontWeight.Normal,
                         fontFamily = Fonts.ManropeFamily,
-                        color = Color(0xFF666666),
+                        color = Color(0xFF888888),
                         letterSpacing = 0.sp
                     )
                 }
@@ -248,19 +248,19 @@ fun WelcomeScreen(backStack: SnapshotStateList<AllScreens>) {
                     ) {
                         Text(
                             text = "स्वागतम्",
-                            fontSize = 32.sp,
+                            fontSize = 28.sp,
                             fontWeight = FontWeight.Bold,
                             fontFamily = Fonts.ManropeFamily,
                             color = Color(0xFF1A1A1A),
                             textAlign = TextAlign.Center,
-                            letterSpacing = (-0.5).sp
+                            letterSpacing = (-0.3).sp
                         )
 
-                        Spacer(modifier = Modifier.height(8.dp))
+                        Spacer(modifier = Modifier.height(6.dp))
 
                         Text(
                             text = "भाषा चयन गर्नुहोस्",
-                            fontSize = 15.sp,
+                            fontSize = 14.sp,
                             fontWeight = FontWeight.Normal,
                             fontFamily = Fonts.ManropeFamily,
                             color = Color(0xFF888888),
@@ -346,8 +346,8 @@ fun UltraModernLanguageButton(
         modifier = Modifier
             .fillMaxWidth()
             .scale(scale)
-            .height(68.dp)
-            .clip(RoundedCornerShape(16.dp))
+            .height(64.dp)
+            .clip(RoundedCornerShape(14.dp))
             .background(backgroundColor)
             .clickable(
                 interactionSource = interactionSource,
@@ -361,7 +361,7 @@ fun UltraModernLanguageButton(
     ) {
         Text(
             text = primaryText,
-            fontSize = 18.sp,
+            fontSize = 16.sp,
             fontWeight = FontWeight.SemiBold,
             fontFamily = Fonts.ManropeFamily,
             color = Color.White,
