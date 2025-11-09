@@ -357,7 +357,7 @@ fun HomeScreen(
 
                         item { Spacer(modifier = Modifier.height(32.dp)) }
 
-                        // Blood Group Grid with improved animation
+                        // Blood Group Grid with smooth, lively animation
                         items(data.chunked(2)) { rowItems ->
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
@@ -365,35 +365,38 @@ fun HomeScreen(
                             ) {
                                 rowItems.forEach { bloodGroup ->
                                     val index = data.indexOf(bloodGroup)
-                                    var animationProgress by remember { mutableStateOf(0f) }
+                                    var shouldAnimate by remember { mutableStateOf(false) }
 
                                     LaunchedEffect(bloodTypesVisible) {
                                         if (bloodTypesVisible) {
-                                            delay(index * 80L) // Staggered delay
-                                            animationProgress = 1f
+                                            delay(index * 50L) // Faster stagger
+                                            shouldAnimate = true
                                         }
                                     }
 
                                     val scale by animateFloatAsState(
-                                        targetValue = if (animationProgress > 0f) 1f else 0.7f,
+                                        targetValue = if (shouldAnimate) 1f else 0.8f,
                                         animationSpec = spring(
-                                            dampingRatio = Spring.DampingRatioMediumBouncy,
-                                            stiffness = Spring.StiffnessMedium
+                                            dampingRatio = Spring.DampingRatioLowBouncy,
+                                            stiffness = Spring.StiffnessLow
                                         ),
                                         label = "card_scale_$index"
                                     )
 
                                     val alpha by animateFloatAsState(
-                                        targetValue = animationProgress,
-                                        animationSpec = tween(500),
+                                        targetValue = if (shouldAnimate) 1f else 0f,
+                                        animationSpec = spring(
+                                            dampingRatio = Spring.DampingRatioMediumBouncy,
+                                            stiffness = Spring.StiffnessMediumLow
+                                        ),
                                         label = "card_alpha_$index"
                                     )
 
                                     val offsetY by animateDpAsState(
-                                        targetValue = if (animationProgress > 0f) 0.dp else 30.dp,
+                                        targetValue = if (shouldAnimate) 0.dp else 40.dp,
                                         animationSpec = spring(
-                                            dampingRatio = Spring.DampingRatioMediumBouncy,
-                                            stiffness = Spring.StiffnessMedium
+                                            dampingRatio = Spring.DampingRatioLowBouncy,
+                                            stiffness = Spring.StiffnessLow
                                         ),
                                         label = "card_offset_$index"
                                     )
@@ -401,9 +404,12 @@ fun HomeScreen(
                                     Box(
                                         modifier = Modifier
                                             .weight(1f)
-                                            .scale(scale)
-                                            .alpha(alpha)
-                                            .offset(y = offsetY)
+                                            .graphicsLayer(
+                                                scaleX = scale,
+                                                scaleY = scale,
+                                                alpha = alpha,
+                                                translationY = offsetY.toPx()
+                                            )
                                     ) {
                                         EnhancedBloodTypeCard(
                                             bloodGroup = bloodGroup,
