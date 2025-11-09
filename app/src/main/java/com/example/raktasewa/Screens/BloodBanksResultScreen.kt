@@ -42,77 +42,97 @@ fun BloodBanksResultScreen(
     language: String
 ) {
     val context = LocalContext.current
+    var searchQuery by remember { mutableStateOf("") }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    colors = listOf(RedBackground, Color.White)
-                )
-            )
+            .background(Color(0xFFFAFAFA))
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp)
+                .padding(horizontal = 20.dp, vertical = 16.dp)
         ) {
-            // Header
-            Card(
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Header Title
+            Text(
+                text = if (language == "Nep") "रक्त बैंक निर्देशिका" else "Blood Bank Directory",
+                fontSize = 26.sp,
+                fontWeight = FontWeight.Bold,
+                fontFamily = Fonts.ManropeFamily,
+                color = Color(0xFF1E293B)
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Count with icon
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Default.LocationOn,
+                    contentDescription = null,
+                    tint = Color(0xFFDC3545),
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Text(
+                    text = if (language == "Nep")
+                        "${bloodBanks.size} रक्त बैंक नजिकै फेला पर्यो"
+                    else
+                        "${bloodBanks.size} blood banks found nearby",
+                    fontSize = 14.sp,
+                    fontFamily = Fonts.ManropeFamily,
+                    color = Color(0xFF64748B),
+                    fontWeight = FontWeight.Medium
+                )
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // Search bar
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = { searchQuery = it },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 8.dp),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = Color.White
+                    .shadow(4.dp, RoundedCornerShape(16.dp)),
+                placeholder = {
+                    Text(
+                        text = if (language == "Nep")
+                            "रक्त बैंक, स्थान, प्रकार खोज्नुहोस्..."
+                        else
+                            "Search blood banks, locations, types...",
+                        fontSize = 14.sp,
+                        fontFamily = Fonts.ManropeFamily,
+                        color = Color(0xFF94A3B8)
+                    )
+                },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Search,
+                        contentDescription = "Search",
+                        tint = Color(0xFF94A3B8),
+                        modifier = Modifier.size(20.dp)
+                    )
+                },
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedContainerColor = Color.White,
+                    unfocusedContainerColor = Color.White,
+                    focusedBorderColor = Color(0xFFE2E8F0),
+                    unfocusedBorderColor = Color(0xFFE2E8F0)
                 ),
-                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(48.dp)
-                            .clip(CircleShape)
-                            .background(
-                                Brush.linearGradient(
-                                    colors = listOf(BloodRed, DarkRed)
-                                )
-                            ),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "🩸",
-                            fontSize = 24.sp
-                        )
-                    }
+                shape = RoundedCornerShape(16.dp),
+                singleLine = true,
+                textStyle = androidx.compose.ui.text.TextStyle(
+                    fontSize = 14.sp,
+                    fontFamily = Fonts.ManropeFamily
+                )
+            )
 
-                    Spacer(modifier = Modifier.width(16.dp))
-
-                    Column {
-                        Text(
-                            text = if (language == "Nep") "रक्त बैंकहरू" else "Blood Banks",
-                            fontSize = 22.sp,
-                            fontWeight = FontWeight.Bold,
-                            fontFamily = Fonts.ManropeFamily,
-                            color = BloodRed
-                        )
-                        Text(
-                            text = if (language == "Nep")
-                                "${bloodBanks.size} नतिजाहरू फेला परे"
-                            else
-                                "${bloodBanks.size} results found",
-                            fontSize = 14.sp,
-                            fontFamily = Fonts.ManropeFamily,
-                            color = DarkGray
-                        )
-                    }
-                }
-            }
+            Spacer(modifier = Modifier.height(20.dp))
 
             if (bloodBanks.isEmpty()) {
                 Box(
@@ -187,7 +207,7 @@ fun BloodBankCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .shadow(8.dp, RoundedCornerShape(20.dp)),
+            .shadow(6.dp, RoundedCornerShape(20.dp)),
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(
             containerColor = Color.White
@@ -196,152 +216,211 @@ fun BloodBankCard(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
+                .padding(20.dp)
         ) {
-            // Header with position and blood type
+            // Hospital header with icon
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    // Position badge
-                    Box(
-                        modifier = Modifier
-                            .size(32.dp)
-                            .clip(CircleShape)
-                            .background(CardRed),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "${index + 1}",
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Bold,
-                            fontFamily = Fonts.ManropeFamily,
-                            color = BloodRed
-                        )
-                    }
+                // Hospital icon/image placeholder
+                Box(
+                    modifier = Modifier
+                        .size(60.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(Color(0xFFFFF0F0)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "🏥",
+                        fontSize = 32.sp
+                    )
+                }
 
-                    Spacer(modifier = Modifier.width(12.dp))
+                Spacer(modifier = Modifier.width(16.dp))
 
+                Column(
+                    modifier = Modifier.weight(1f)
+                ) {
                     Text(
                         text = bloodBank.name,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                         fontFamily = Fonts.ManropeFamily,
-                        color = DarkGray,
+                        color = Color(0xFF1E293B),
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.weight(1f)
+                        overflow = TextOverflow.Ellipsis
                     )
-                }
 
-                // Blood type badge
-                Surface(
-                    shape = RoundedCornerShape(12.dp),
-                    color = BloodRed
-                ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "🩸",
-                            fontSize = 16.sp
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.LocationOn,
+                            contentDescription = null,
+                            tint = Color(0xFF64748B),
+                            modifier = Modifier.size(14.dp)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = bloodBank.type,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Bold,
+                            text = bloodBank.address,
+                            fontSize = 13.sp,
                             fontFamily = Fonts.ManropeFamily,
-                            color = Color.White
+                            color = Color(0xFF64748B),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.Phone,
+                            contentDescription = null,
+                            tint = Color(0xFF10B981),
+                            modifier = Modifier.size(14.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = bloodBank.contact,
+                            fontSize = 13.sp,
+                            fontFamily = Fonts.ManropeFamily,
+                            color = Color(0xFF10B981),
+                            fontWeight = FontWeight.Medium
                         )
                     }
                 }
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Divider(color = LightGray)
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Info rows
-            InfoRowModern(
-                icon = Icons.Default.LocationOn,
-                label = if (language == "Nep") "ठेगाना" else "Address",
-                value = bloodBank.address
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                InfoRowModern(
-                    icon = Icons.Default.Favorite,
-                    label = if (language == "Nep") "परिमाण" else "Quantity",
-                    value = "${bloodBank.quantity.roundToInt()} units",
-                    modifier = Modifier.weight(1f)
-                )
-
-                Spacer(modifier = Modifier.width(8.dp))
-
-                InfoRowModern(
-                    icon = Icons.Default.Phone,
-                    label = if (language == "Nep") "सम्पर्क" else "Contact",
-                    value = bloodBank.contact,
-                    modifier = Modifier.weight(1f)
-                )
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Call button
+            // Blood info card
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                color = Color(0xFFFFF5F5)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text(
+                            text = if (language == "Nep") "रक्त प्रकार" else "Blood Type",
+                            fontSize = 11.sp,
+                            fontFamily = Fonts.ManropeFamily,
+                            color = Color(0xFF64748B),
+                            fontWeight = FontWeight.Medium
+                        )
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Surface(
+                            shape = RoundedCornerShape(10.dp),
+                            color = Color(0xFFDC3545)
+                        ) {
+                            Text(
+                                text = bloodBank.type,
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                                fontFamily = Fonts.ManropeFamily,
+                                color = Color.White,
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        // Stock status
+                        val isCritical = bloodBank.quantity < 10
+                        Surface(
+                            shape = RoundedCornerShape(8.dp),
+                            color = if (isCritical) Color(0xFFFEE2E2) else Color(0xFFDCFCE7)
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = if (isCritical) "⚠️" else "✓",
+                                    fontSize = 12.sp
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = if (isCritical) {
+                                        if (language == "Nep") "महत्वपूर्ण स्टक" else "Critical Stock"
+                                    } else {
+                                        if (language == "Nep") "राम्रो स्टक" else "Good Stock"
+                                    },
+                                    fontSize = 11.sp,
+                                    fontFamily = Fonts.ManropeFamily,
+                                    color = if (isCritical) Color(0xFFDC2626) else Color(0xFF16A34A),
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            }
+                        }
+                    }
+
+                    Column(
+                        horizontalAlignment = Alignment.End
+                    ) {
+                        Text(
+                            text = if (language == "Nep") "उपलब्ध एकाइहरू" else "Available Units",
+                            fontSize = 11.sp,
+                            fontFamily = Fonts.ManropeFamily,
+                            color = Color(0xFF64748B),
+                            fontWeight = FontWeight.Medium
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "${bloodBank.quantity.roundToInt()}.0",
+                            fontSize = 32.sp,
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = Fonts.ManropeFamily,
+                            color = Color(0xFFDC3545),
+                            letterSpacing = (-1).sp
+                        )
+                        Text(
+                            text = if (language == "Nep") "एकाइहरू" else "units",
+                            fontSize = 12.sp,
+                            fontFamily = Fonts.ManropeFamily,
+                            color = Color(0xFF64748B)
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Contact button
             Button(
                 onClick = onCallClick,
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
+                shape = RoundedCornerShape(14.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.Transparent
+                    containerColor = Color(0xFFDC3545)
                 ),
-                contentPadding = PaddingValues(0.dp),
-                elevation = ButtonDefaults.buttonElevation(
-                    defaultElevation = 0.dp
-                )
+                contentPadding = PaddingValues(vertical = 14.dp)
             ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(
-                            Brush.horizontalGradient(
-                                colors = listOf(DarkRed, BloodRed)
-                            ),
-                            shape = RoundedCornerShape(12.dp)
-                        )
-                        .padding(vertical = 12.dp),
-                    contentAlignment = Alignment.Center
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Phone,
-                            contentDescription = "Call",
-                            tint = Color.White,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = if (language == "Nep") "कल गर्नुहोस्" else "Call Now",
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold,
-                            fontFamily = Fonts.ManropeFamily,
-                            color = Color.White
-                        )
-                    }
+                    Icon(
+                        imageVector = Icons.Default.Phone,
+                        contentDescription = "Call",
+                        tint = Color.White,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = if (language == "Nep") "रक्त बैंक सम्पर्क गर्नुहोस्" else "Contact Blood Bank",
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = Fonts.ManropeFamily,
+                        color = Color.White
+                    )
                 }
             }
         }

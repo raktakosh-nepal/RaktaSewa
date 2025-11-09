@@ -301,24 +301,26 @@ fun HomeScreen(
                                     text = if (language == "Nep")
                                         "रक्त बैंक खोज्नुहोस्"
                                     else
-                                        "Find Blood Banks",
-                                    fontSize = 26.sp,
-                                    fontWeight = FontWeight.ExtraBold,
+                                        "Find Blood Banks Near You",
+                                    fontSize = 22.sp,
+                                    fontWeight = FontWeight.Bold,
                                     fontFamily = Fonts.ManropeFamily,
                                     color = Color(0xFF2C3E50),
-                                    letterSpacing = (-0.5).sp
+                                    letterSpacing = (-0.3).sp
                                 )
+
+                                Spacer(modifier = Modifier.height(4.dp))
 
                                 Text(
                                     text = if (language == "Nep")
                                         "रक्त समूह चयन गर्नुहोस्"
                                     else
-                                        "Select blood type",
+                                        "Select your required blood group to get started",
                                     fontSize = 13.sp,
                                     fontFamily = Fonts.ManropeFamily,
                                     color = Color(0xFF999999),
-                                    fontWeight = FontWeight.Medium,
-                                    letterSpacing = 0.3.sp
+                                    fontWeight = FontWeight.Normal,
+                                    letterSpacing = 0.sp
                                 )
                             }
                         }
@@ -376,24 +378,64 @@ fun HomeScreen(
                                 )
                             )
                         ) {
-                            PremiumSearchButton(
-                                text = if (language == "Nep")
-                                    "खोज्नुहोस्"
-                                else
-                                    "Search Now",
-                                onClick = {
-                                    backStack.add(
-                                        AllScreens.LoadinScreen(
-                                            message = if (language == "Nep")
-                                                "रक्त बैंकहरूबाट डाटा ल्याउँदै"
-                                            else
-                                                "Fetching blood banks...",
-                                            bloodType = viewModel.selectedBloodGroup!!,
-                                            language = language
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                PremiumSearchButton(
+                                    text = if (language == "Nep")
+                                        "रक्त बैंकहरू खोज्नुहोस्"
+                                    else
+                                        "Search Blood Banks",
+                                    onClick = {
+                                        backStack.add(
+                                            AllScreens.LoadinScreen(
+                                                message = if (language == "Nep")
+                                                    "रक्त बैंकहरूबाट डाटा ल्याउँदै"
+                                                else
+                                                    "Fetching blood banks...",
+                                                bloodType = viewModel.selectedBloodGroup!!,
+                                                language = language
+                                            )
                                         )
+                                    }
+                                )
+
+                                Spacer(modifier = Modifier.height(16.dp))
+
+                                // Emergency Search Link
+                                Row(
+                                    modifier = Modifier.clickable {
+                                        backStack.add(
+                                            AllScreens.LoadinScreen(
+                                                message = if (language == "Nep")
+                                                    "आपतकालीन खोज"
+                                                else
+                                                    "Emergency search...",
+                                                bloodType = viewModel.selectedBloodGroup!!,
+                                                language = language
+                                            )
+                                        )
+                                    },
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = "🚨",
+                                        fontSize = 18.sp
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(
+                                        text = if (language == "Nep")
+                                            "आपतकालीन खोज"
+                                        else
+                                            "Emergency Search",
+                                        fontSize = 15.sp,
+                                        fontWeight = FontWeight.SemiBold,
+                                        fontFamily = Fonts.ManropeFamily,
+                                        color = Color(0xFFDC3545),
+                                        letterSpacing = 0.sp
                                     )
                                 }
-                            )
+                            }
                         }
                     }
                 }
@@ -568,26 +610,14 @@ fun PremiumSearchButton(
                 ),
             contentAlignment = Alignment.Center
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Search,
-                    contentDescription = "Search",
-                    tint = Color.White,
-                    modifier = Modifier.size(24.dp)
-                )
-                Spacer(modifier = Modifier.width(12.dp))
-                Text(
-                    text = text,
-                    fontSize = 19.sp,
-                    fontWeight = FontWeight.Bold,
-                    fontFamily = Fonts.ManropeFamily,
-                    color = Color.White,
-                    letterSpacing = 0.5.sp
-                )
-            }
+            Text(
+                text = text,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                fontFamily = Fonts.ManropeFamily,
+                color = Color.White,
+                letterSpacing = 0.sp
+            )
         }
     }
 }

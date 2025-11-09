@@ -125,143 +125,193 @@ fun LoadingScreen(backStack: SnapshotStateList<AllScreens>, text: String, bloodT
             .fillMaxSize()
             .background(
                 Brush.verticalGradient(
-                    colors = listOf(RedBackground, Color.White)
+                    colors = listOf(
+                        Color(0xFFFFF5F5),
+                        Color(0xFFFFFFFF),
+                        Color(0xFFFFF5F5)
+                    )
                 )
-            ),
-        contentAlignment = Alignment.Center
+            )
     ) {
         Column(
+            modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-            modifier = Modifier.padding(32.dp)
+            verticalArrangement = Arrangement.SpaceBetween
         ) {
-            // Animated blood drops
-            BloodDropsAnimation()
+            Spacer(modifier = Modifier.weight(1f))
 
-            Spacer(modifier = Modifier.height(48.dp))
+            // Animated blood drop with orbiting circles
+            BloodDropWithOrbits(bloodType = bloodType)
 
-            Text(
-                text = text,
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Medium,
-                fontFamily = Fonts.ManropeFamily,
-                color = DarkGray,
-                textAlign = TextAlign.Center
-            )
+            Spacer(modifier = Modifier.weight(1f))
 
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Progress indicator
-            LinearProgressIndicator(
+            // Bottom card with progress
+            androidx.compose.material3.Surface(
                 modifier = Modifier
-                    .fillMaxWidth(0.7f)
-                    .height(6.dp),
-                color = BloodRed,
-                trackColor = CardRed
-            )
+                    .fillMaxWidth()
+                    .padding(horizontal = 32.dp, vertical = 80.dp),
+                shape = androidx.compose.foundation.shape.RoundedCornerShape(24.dp),
+                color = Color.White,
+                shadowElevation = 12.dp
+            ) {
+                Column(
+                    modifier = Modifier.padding(28.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    // Progress dots indicator
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        modifier = Modifier.padding(bottom = 20.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(10.dp)
+                                .clip(androidx.compose.foundation.shape.CircleShape)
+                                .background(Color(0xFFDC3545))
+                        )
+                        Box(
+                            modifier = Modifier
+                                .size(10.dp)
+                                .clip(androidx.compose.foundation.shape.CircleShape)
+                                .background(Color(0xFFE0E0E0))
+                        )
+                        Box(
+                            modifier = Modifier
+                                .size(10.dp)
+                                .clip(androidx.compose.foundation.shape.CircleShape)
+                                .background(Color(0xFFE0E0E0))
+                        )
+                    }
 
-            Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = if (language == "Nep")
+                            "तपाईंको स्थान प्राप्त गर्दै..."
+                        else
+                            "Getting your location...",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        fontFamily = Fonts.ManropeFamily,
+                        color = Color(0xFF2C3E50),
+                        textAlign = TextAlign.Center
+                    )
 
-            Text(
-                text = if (language == "Nep")
-                    "कृपया प्रतीक्षा गर्नुहोस्..."
-                else
-                    "Please wait...",
-                fontSize = 14.sp,
-                fontFamily = Fonts.ManropeFamily,
-                color = DarkRed,
-                fontWeight = FontWeight.Light
-            )
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Text(
+                        text = if (language == "Nep")
+                            "रक्त प्रकार: $bloodType"
+                        else
+                            "Blood Type: $bloodType",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium,
+                        fontFamily = Fonts.ManropeFamily,
+                        color = Color(0xFFDC3545),
+                        textAlign = TextAlign.Center
+                    )
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    // Progress bar
+                    LinearProgressIndicator(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(4.dp)
+                            .clip(androidx.compose.foundation.shape.RoundedCornerShape(2.dp)),
+                        color = Color(0xFFDC3545),
+                        trackColor = Color(0xFFE0E0E0)
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = if (language == "Nep")
+                                "चरण १ को ३"
+                            else
+                                "Step 1 of 3",
+                            fontSize = 13.sp,
+                            fontFamily = Fonts.ManropeFamily,
+                            color = Color(0xFF888888),
+                            fontWeight = FontWeight.Normal
+                        )
+                        Text(
+                            text = "0%",
+                            fontSize = 13.sp,
+                            fontFamily = Fonts.ManropeFamily,
+                            color = Color(0xFFDC3545),
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+                }
+            }
         }
     }
 }
 
 @Composable
-fun BloodDropsAnimation() {
+fun BloodDropWithOrbits(bloodType: String) {
     val infiniteTransition = rememberInfiniteTransition(label = "")
-
-    // Three blood drops with different animations
-    val drop1Y by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 100f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1500, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = ""
-    )
-
-    val drop2Y by infiniteTransition.animateFloat(
-        initialValue = -50f,
-        targetValue = 100f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1800, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = ""
-    )
-
-    val drop3Y by infiniteTransition.animateFloat(
-        initialValue = -100f,
-        targetValue = 100f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(2000, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = ""
-    )
 
     val rotation by infiniteTransition.animateFloat(
         initialValue = 0f,
         targetValue = 360f,
         animationSpec = infiniteRepeatable(
-            animation = tween(3000, easing = LinearEasing),
+            animation = tween(4000, easing = LinearEasing),
             repeatMode = RepeatMode.Restart
         ),
         label = ""
     )
 
     Box(
-        modifier = Modifier.size(200.dp),
+        modifier = Modifier.size(280.dp),
         contentAlignment = Alignment.Center
     ) {
-        Canvas(modifier = Modifier.size(180.dp)) {
+        // Orbiting circles
+        Canvas(modifier = Modifier.size(240.dp)) {
             val centerX = size.width / 2
-            val radius = 60f
+            val centerY = size.height / 2
+            val radius = 90f
 
-            // Draw three rotating circles with blood drops
-            for (i in 0..2) {
-                val angle = (rotation + i * 120) * Math.PI / 180
+            // Draw four rotating circles
+            for (i in 0..3) {
+                val angle = (rotation + i * 90) * Math.PI / 180
                 val x = centerX + cos(angle).toFloat() * radius
-                val y = centerX + sin(angle).toFloat() * radius
+                val y = centerY + sin(angle).toFloat() * radius
 
                 drawCircle(
-                    color = when(i) {
-                        0 -> BloodRed
-                        1 -> DarkRed
-                        else -> SoftRed
-                    },
-                    radius = 15f,
+                    color = Color(0xFFFFB8B8).copy(alpha = 0.6f),
+                    radius = 18f,
                     center = androidx.compose.ui.geometry.Offset(x, y)
                 )
             }
         }
 
-        // Center blood drop with pulse animation
-        val scale by infiniteTransition.animateFloat(
-            initialValue = 0.8f,
-            targetValue = 1.2f,
-            animationSpec = infiniteRepeatable(
-                animation = tween(800, easing = EaseInOut),
-                repeatMode = RepeatMode.Reverse
-            ),
-            label = ""
-        )
-
-        Text(
-            text = "🩸",
-            fontSize = 60.sp,
-            modifier = Modifier.scale(scale)
-        )
+        // Center blood group badge
+        Box(
+            modifier = Modifier
+                .size(140.dp)
+                .clip(CircleShape)
+                .background(
+                    Brush.radialGradient(
+                        colors = listOf(
+                            Color(0xFFDC3545),
+                            Color(0xFFC82333)
+                        )
+                    )
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = bloodType,
+                fontSize = 48.sp,
+                fontWeight = FontWeight.Bold,
+                fontFamily = Fonts.ManropeFamily,
+                color = Color.White,
+                letterSpacing = (-1).sp
+            )
+        }
     }
 }
