@@ -194,23 +194,23 @@ fun WelcomeScreen(backStack: SnapshotStateList<AllScreens>) {
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "रक्तसेवा",
+                        text = "RaktaSewa",
                         fontSize = 48.sp,
                         fontWeight = FontWeight.Black,
                         fontFamily = Fonts.ManropeFamily,
-                        color = Color(0xFF1A1A1A),
+                        color = Color(0xFFDC3545),
                         letterSpacing = (-1.5).sp
                     )
 
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
 
                     Text(
-                        text = "Blood Service",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Medium,
+                        text = "Your Life-Saving Partner",
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Normal,
                         fontFamily = Fonts.ManropeFamily,
                         color = Color(0xFF666666),
-                        letterSpacing = 2.sp
+                        letterSpacing = 0.sp
                     )
                 }
 
@@ -247,20 +247,8 @@ fun WelcomeScreen(backStack: SnapshotStateList<AllScreens>) {
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            text = "Choose Your Language",
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            fontFamily = Fonts.ManropeFamily,
-                            color = Color(0xFF888888),
-                            textAlign = TextAlign.Center,
-                            letterSpacing = 1.2.sp
-                        )
-
-                        Spacer(modifier = Modifier.height(6.dp))
-
-                        Text(
-                            text = "भाषा छान्नुहोस्",
-                            fontSize = 28.sp,
+                            text = "स्वागतम्",
+                            fontSize = 32.sp,
                             fontWeight = FontWeight.Bold,
                             fontFamily = Fonts.ManropeFamily,
                             color = Color(0xFF1A1A1A),
@@ -268,15 +256,28 @@ fun WelcomeScreen(backStack: SnapshotStateList<AllScreens>) {
                             letterSpacing = (-0.5).sp
                         )
 
-                        Spacer(modifier = Modifier.height(36.dp))
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Text(
+                            text = "भाषा चयन गर्नुहोस्",
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Normal,
+                            fontFamily = Fonts.ManropeFamily,
+                            color = Color(0xFF888888),
+                            textAlign = TextAlign.Center,
+                            letterSpacing = 0.sp
+                        )
+
+                        Spacer(modifier = Modifier.height(32.dp))
 
                         // Nepali Language Option
                         UltraModernLanguageButton(
-                            primaryText = "नेपाली",
-                            secondaryText = "Nepali",
-                            flag = "🇳🇵",
-                            accentColor = Color(0xFFE74C3C),
-                            isSelected = false
+                            primaryText = "🇳🇵 नेपाली",
+                            secondaryText = "",
+                            flag = "",
+                            accentColor = Color(0xFFDC3545),
+                            isSelected = false,
+                            backgroundColor = Color(0xFFDC3545)
                         ) {
                             languagePreference.saveLanguage(LanguagePreference.LANGUAGE_NEPALI)
                             backStack.removeLastOrNull()
@@ -287,11 +288,12 @@ fun WelcomeScreen(backStack: SnapshotStateList<AllScreens>) {
 
                         // English Language Option
                         UltraModernLanguageButton(
-                            primaryText = "English",
-                            secondaryText = "अंग्रेजी",
-                            flag = "🇺🇸",
-                            accentColor = Color(0xFF3498DB),
-                            isSelected = false
+                            primaryText = "🇺🇸 English",
+                            secondaryText = "",
+                            flag = "",
+                            accentColor = Color(0xFF1E293B),
+                            isSelected = false,
+                            backgroundColor = Color(0xFF1E293B)
                         ) {
                             languagePreference.saveLanguage(LanguagePreference.LANGUAGE_ENGLISH)
                             backStack.removeLastOrNull()
@@ -300,7 +302,19 @@ fun WelcomeScreen(backStack: SnapshotStateList<AllScreens>) {
                     }
                 }
 
-                Spacer(modifier = Modifier.height(48.dp))
+                Spacer(modifier = Modifier.height(20.dp))
+
+                // Bottom tagline
+                Text(
+                    text = "Connecting Lives, Saving Lives",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Normal,
+                    fontFamily = Fonts.ManropeFamily,
+                    color = Color(0xFF999999),
+                    textAlign = TextAlign.Center
+                )
+
+                Spacer(modifier = Modifier.height(32.dp))
             }
         }
     }
@@ -313,6 +327,7 @@ fun UltraModernLanguageButton(
     flag: String,
     accentColor: Color,
     isSelected: Boolean,
+    backgroundColor: Color = accentColor,
     onClick: () -> Unit
 ) {
     var isPressed by remember { mutableStateOf(false) }
@@ -327,36 +342,13 @@ fun UltraModernLanguageButton(
         label = "button_scale"
     )
 
-    val borderAlpha by animateFloatAsState(
-        targetValue = if (isPressed) 0.3f else 0.6f,
-        animationSpec = tween(200),
-        label = "border_alpha"
-    )
-
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .scale(scale)
-            .height(76.dp)
-            .clip(RoundedCornerShape(20.dp))
-            .background(
-                Brush.horizontalGradient(
-                    colors = listOf(
-                        Color.White.copy(alpha = 0.95f),
-                        Color.White.copy(alpha = 0.85f)
-                    )
-                )
-            )
-            .border(
-                width = 2.dp,
-                brush = Brush.horizontalGradient(
-                    colors = listOf(
-                        accentColor.copy(alpha = borderAlpha),
-                        accentColor.copy(alpha = borderAlpha * 0.5f)
-                    )
-                ),
-                shape = RoundedCornerShape(20.dp)
-            )
+            .height(68.dp)
+            .clip(RoundedCornerShape(16.dp))
+            .background(backgroundColor)
             .clickable(
                 interactionSource = interactionSource,
                 indication = null,
@@ -367,67 +359,13 @@ fun UltraModernLanguageButton(
             ),
         contentAlignment = Alignment.Center
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 24.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // Flag with subtle background
-                Box(
-                    modifier = Modifier
-                        .size(48.dp)
-                        .clip(CircleShape)
-                        .background(accentColor.copy(alpha = 0.1f)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = flag,
-                        fontSize = 28.sp
-                    )
-                }
-
-                Spacer(modifier = Modifier.width(16.dp))
-
-                Column {
-                    Text(
-                        text = primaryText,
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        fontFamily = Fonts.ManropeFamily,
-                        color = Color(0xFF1A1A1A),
-                        letterSpacing = (-0.3).sp
-                    )
-                    Text(
-                        text = secondaryText,
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Medium,
-                        fontFamily = Fonts.ManropeFamily,
-                        color = Color(0xFF888888),
-                        letterSpacing = 0.2.sp
-                    )
-                }
-            }
-
-            // Arrow indicator
-            Box(
-                modifier = Modifier
-                    .size(36.dp)
-                    .clip(CircleShape)
-                    .background(accentColor.copy(alpha = 0.15f)),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "→",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = accentColor
-                )
-            }
-        }
+        Text(
+            text = primaryText,
+            fontSize = 18.sp,
+            fontWeight = FontWeight.SemiBold,
+            fontFamily = Fonts.ManropeFamily,
+            color = Color.White,
+            letterSpacing = 0.sp
+        )
     }
 }
