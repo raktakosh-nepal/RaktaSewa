@@ -124,16 +124,17 @@ fun HomeScreen(
         Box(
             modifier = Modifier.fillMaxSize()
         ) {
-            // Animated gradient background
+            // Animated gradient background - Darker shades
             Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(
                         Brush.verticalGradient(
                             colors = listOf(
-                                Color(0xFFE85A50),
-                                Color(0xFFDC4F45),
-                                Color(0xFFD84639)
+                                Color(0xFFB71C1C),
+                                Color(0xFFC62828),
+                                Color(0xFFD32F2F),
+                                Color(0xFFB71C1C)
                             )
                         )
                     )
@@ -356,7 +357,7 @@ fun HomeScreen(
 
                         item { Spacer(modifier = Modifier.height(32.dp)) }
 
-                        // Blood Group Grid
+                        // Blood Group Grid with improved animation
                         items(data.chunked(2)) { rowItems ->
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
@@ -364,33 +365,51 @@ fun HomeScreen(
                             ) {
                                 rowItems.forEach { bloodGroup ->
                                     val index = data.indexOf(bloodGroup)
-                                    var itemVisible by remember { mutableStateOf(false) }
+                                    var animationProgress by remember { mutableStateOf(0f) }
 
                                     LaunchedEffect(bloodTypesVisible) {
                                         if (bloodTypesVisible) {
-                                            delay(index * 60L)
-                                            itemVisible = true
+                                            delay(index * 80L) // Staggered delay
+                                            animationProgress = 1f
                                         }
                                     }
 
-                                    Box(modifier = Modifier.weight(1f)) {
-                                        this@Row.AnimatedVisibility(
-                                            visible = itemVisible,
-                                            enter = fadeIn(tween(400)) +
-                                                    scaleIn(
-                                                        initialScale = 0.7f,
-                                                        animationSpec = spring(
-                                                            dampingRatio = Spring.DampingRatioLowBouncy,
-                                                            stiffness = Spring.StiffnessMedium
-                                                        )
-                                                    )
-                                        ) {
-                                            EnhancedBloodTypeCard(
-                                                bloodGroup = bloodGroup,
-                                                isSelected = viewModel.selectedBloodGroup == bloodGroup,
-                                                onClick = { viewModel.selectBloodGroup(bloodGroup) }
-                                            )
-                                        }
+                                    val scale by animateFloatAsState(
+                                        targetValue = if (animationProgress > 0f) 1f else 0.7f,
+                                        animationSpec = spring(
+                                            dampingRatio = Spring.DampingRatioMediumBouncy,
+                                            stiffness = Spring.StiffnessMedium
+                                        ),
+                                        label = "card_scale_$index"
+                                    )
+
+                                    val alpha by animateFloatAsState(
+                                        targetValue = animationProgress,
+                                        animationSpec = tween(500),
+                                        label = "card_alpha_$index"
+                                    )
+
+                                    val offsetY by animateDpAsState(
+                                        targetValue = if (animationProgress > 0f) 0.dp else 30.dp,
+                                        animationSpec = spring(
+                                            dampingRatio = Spring.DampingRatioMediumBouncy,
+                                            stiffness = Spring.StiffnessMedium
+                                        ),
+                                        label = "card_offset_$index"
+                                    )
+
+                                    Box(
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .scale(scale)
+                                            .alpha(alpha)
+                                            .offset(y = offsetY)
+                                    ) {
+                                        EnhancedBloodTypeCard(
+                                            bloodGroup = bloodGroup,
+                                            isSelected = viewModel.selectedBloodGroup == bloodGroup,
+                                            onClick = { viewModel.selectBloodGroup(bloodGroup) }
+                                        )
                                     }
                                 }
                             }
