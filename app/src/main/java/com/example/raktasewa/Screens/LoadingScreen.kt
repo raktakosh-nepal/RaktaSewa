@@ -47,19 +47,14 @@ import kotlinx.coroutines.withContext
 import kotlin.math.cos
 import kotlin.math.sin
 
-// Particle data class for the sci-fi particle system
-data class Particle(
+// Blood drop data class for the loading animation
+data class BloodDrop(
     var x: Float,
     var y: Float,
-    var velocityX: Float,
     var velocityY: Float,
     var alpha: Float,
     var size: Float,
-    var life: Float,
-    var maxLife: Float,
-    var color: Color,
-    var rotation: Float = 0f,
-    var rotationSpeed: Float = 0f
+    var phase: Float = 0f
 )
 
 @Composable
@@ -276,239 +271,89 @@ fun LoadingScreen(backStack: SnapshotStateList<AllScreens>, text: String, bloodT
 fun BloodDropWithOrbits(bloodType: String) {
     val infiniteTransition = rememberInfiniteTransition(label = "")
 
-    // Particle system state
-    val particles = remember { mutableStateListOf<Particle>() }
+    // Blood drops state
+    val bloodDrops = remember { mutableStateListOf<BloodDrop>() }
     var frameCount by remember { mutableIntStateOf(0) }
 
-    // Main rotation for orbiting circles
-    val rotation by infiniteTransition.animateFloat(
+    // Heartbeat pulse animation (like an ECG)
+    val heartbeatScale by infiniteTransition.animateFloat(
+        initialValue = 1.0f,
+        targetValue = 1.1f,
+        animationSpec = infiniteRepeatable(
+            animation = keyframes {
+                durationMillis = 1200
+                1.0f at 0
+                1.15f at 100 using EaseInOut
+                1.0f at 200
+                1.08f at 300 using EaseInOut
+                1.0f at 400
+            },
+            repeatMode = RepeatMode.Restart
+        ),
+        label = ""
+    )
+
+    // Pulse wave that expands outward (like heartbeat ripple)
+    val pulseRadius by infiniteTransition.animateFloat(
+        initialValue = 70f,
+        targetValue = 140f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1200, easing = EaseOut),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = ""
+    )
+
+    // Rotation for flowing effect
+    val flowRotation by infiniteTransition.animateFloat(
         initialValue = 0f,
         targetValue = 360f,
         animationSpec = infiniteRepeatable(
-            animation = tween(2000, easing = LinearEasing),
+            animation = tween(4000, easing = LinearEasing),
             repeatMode = RepeatMode.Restart
         ),
         label = ""
     )
 
-    // Center badge pulsing
-    val badgeScale by infiniteTransition.animateFloat(
-        initialValue = 0.95f,
-        targetValue = 1.08f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1200, easing = EaseInOutCubic),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = ""
-    )
+    // Update blood drops - spawn and animate
+    LaunchedEffect(Unit) {
+        while (true) {
+            frameCount++
 
-    // Circle opacity pulsing
-    val circleOpacity by infiniteTransition.animateFloat(
-        initialValue = 0.4f,
-        targetValue = 1.0f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(800, easing = EaseInOutSine),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = ""
-    )
-
-    // Inner ring rotation (opposite direction)
-    val innerRotation by infiniteTransition.animateFloat(
-        initialValue = 360f,
-        targetValue = 0f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(2500, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = ""
-    )
-
-    // Circle scale pulsing
-    val circleScale by infiniteTransition.animateFloat(
-        initialValue = 0.85f,
-        targetValue = 1.15f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(900, easing = EaseInOutSine),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = ""
-    )
-
-    // Outer ring rotation
-    val outerRotation by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 360f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(3500, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = ""
-    )
-
-    // Energy wave expansion
-    val waveRadius by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 150f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(2000, easing = EaseOut),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = ""
-    )
-
-    // Secondary energy wave (offset)
-    val waveRadius2 by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 150f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(2000, easing = EaseOut),
-            repeatMode = RepeatMode.Restart,
-            initialStartOffset = StartOffset(1000)
-        ),
-        label = ""
-    )
-
-    // Cosmic glow pulse
-    val glowIntensity by infiniteTransition.animateFloat(
-        initialValue = 0.3f,
-        targetValue = 0.8f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1500, easing = EaseInOutSine),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = ""
-    )
-
-    // Update particles and spawn new ones
-    LaunchedEffect(rotation, innerRotation, outerRotation) {
-        frameCount++
-
-        // Spawn particles from orbiting circles
-        if (frameCount % 2 == 0) { // Spawn every 2 frames
-            val centerX = 140f
-            val centerY = 140f
-
-            // Spawn from outer ring
-            for (i in 0..5) {
-                if (Random.nextFloat() < 0.4f) {
-                    val angle = (outerRotation + i * 60) * Math.PI / 180
-                    val x = centerX + cos(angle).toFloat() * 120f
-                    val y = centerY + sin(angle).toFloat() * 120f
-
-                    val particleAngle = angle + Random.nextFloat() * 0.5 - 0.25
-                    val speed = Random.nextFloat() * 2f + 1.5f
-
-                    particles.add(
-                        Particle(
-                            x = x,
-                            y = y,
-                            velocityX = cos(particleAngle).toFloat() * speed,
-                            velocityY = sin(particleAngle).toFloat() * speed,
-                            alpha = 1f,
-                            size = Random.nextFloat() * 4f + 3f,
-                            life = 1f,
-                            maxLife = Random.nextFloat() * 0.5f + 0.8f,
-                            color = when (Random.nextInt(4)) {
-                                0 -> Color(0xFFFF6B6B)
-                                1 -> Color(0xFFFF8787)
-                                2 -> Color(0xFFFFB3B3)
-                                else -> Color(0xFFFFD4D4)
-                            },
-                            rotation = Random.nextFloat() * 360f,
-                            rotationSpeed = Random.nextFloat() * 4f - 2f
-                        )
+            // Spawn new blood drops periodically
+            if (frameCount % 15 == 0) {
+                bloodDrops.add(
+                    BloodDrop(
+                        x = Random.nextFloat() * 280f + 10f,
+                        y = -20f,
+                        velocityY = Random.nextFloat() * 2f + 2f,
+                        alpha = Random.nextFloat() * 0.3f + 0.6f,
+                        size = Random.nextFloat() * 6f + 4f,
+                        phase = Random.nextFloat()
                     )
+                )
+            }
+
+            // Update existing drops
+            val iterator = bloodDrops.iterator()
+            while (iterator.hasNext()) {
+                val drop = iterator.next()
+                drop.y += drop.velocityY
+                drop.velocityY += 0.1f // Gravity
+                drop.phase += 0.1f
+
+                // Remove drops that fall off screen
+                if (drop.y > 320f) {
+                    iterator.remove()
                 }
             }
 
-            // Spawn from middle ring
-            for (i in 0..3) {
-                if (Random.nextFloat() < 0.5f) {
-                    val angle = (rotation + i * 90) * Math.PI / 180
-                    val x = centerX + cos(angle).toFloat() * 100f
-                    val y = centerY + sin(angle).toFloat() * 100f
-
-                    val particleAngle = angle + Random.nextFloat() * 0.6 - 0.3
-                    val speed = Random.nextFloat() * 2.5f + 2f
-
-                    particles.add(
-                        Particle(
-                            x = x,
-                            y = y,
-                            velocityX = cos(particleAngle).toFloat() * speed,
-                            velocityY = sin(particleAngle).toFloat() * speed,
-                            alpha = 1f,
-                            size = Random.nextFloat() * 5f + 4f,
-                            life = 1f,
-                            maxLife = Random.nextFloat() * 0.6f + 1f,
-                            color = when (Random.nextInt(3)) {
-                                0 -> Color(0xFFFF4757)
-                                1 -> Color(0xFFFF6B81)
-                                else -> Color(0xFFFF9AA2)
-                            },
-                            rotation = Random.nextFloat() * 360f,
-                            rotationSpeed = Random.nextFloat() * 5f - 2.5f
-                        )
-                    )
-                }
+            // Limit drop count
+            while (bloodDrops.size > 25) {
+                bloodDrops.removeAt(0)
             }
 
-            // Spawn from inner ring
-            for (i in 0..2) {
-                if (Random.nextFloat() < 0.6f) {
-                    val angle = (innerRotation + i * 120) * Math.PI / 180
-                    val x = centerX + cos(angle).toFloat() * 70f
-                    val y = centerY + sin(angle).toFloat() * 70f
-
-                    val particleAngle = angle + Random.nextFloat() * 0.8 - 0.4
-                    val speed = Random.nextFloat() * 3f + 2.5f
-
-                    particles.add(
-                        Particle(
-                            x = x,
-                            y = y,
-                            velocityX = cos(particleAngle).toFloat() * speed,
-                            velocityY = sin(particleAngle).toFloat() * speed,
-                            alpha = 1f,
-                            size = Random.nextFloat() * 6f + 3f,
-                            life = 1f,
-                            maxLife = Random.nextFloat() * 0.7f + 1.2f,
-                            color = when (Random.nextInt(3)) {
-                                0 -> Color(0xFFDC3545)
-                                1 -> Color(0xFFFF5370)
-                                else -> Color(0xFFFFB8C5)
-                            },
-                            rotation = Random.nextFloat() * 360f,
-                            rotationSpeed = Random.nextFloat() * 6f - 3f
-                        )
-                    )
-                }
-            }
-        }
-
-        // Update existing particles
-        val iterator = particles.iterator()
-        while (iterator.hasNext()) {
-            val particle = iterator.next()
-            particle.x += particle.velocityX
-            particle.y += particle.velocityY
-            particle.life -= 0.02f
-            particle.alpha = (particle.life / particle.maxLife).coerceIn(0f, 1f)
-            particle.rotation += particle.rotationSpeed
-
-            // Apply slight gravity/curl effect
-            particle.velocityY += 0.05f
-
-            // Remove dead particles
-            if (particle.life <= 0 || particle.alpha <= 0) {
-                iterator.remove()
-            }
-        }
-
-        // Limit particle count for performance
-        while (particles.size > 200) {
-            particles.removeAt(0)
+            kotlinx.coroutines.delay(16) // ~60 FPS
         }
     }
 
@@ -516,231 +361,114 @@ fun BloodDropWithOrbits(bloodType: String) {
         modifier = Modifier.size(300.dp),
         contentAlignment = Alignment.Center
     ) {
-        // Main canvas with all effects
+        // Main canvas
         Canvas(modifier = Modifier.size(300.dp)) {
             val centerX = size.width / 2
             val centerY = size.height / 2
 
-            // Cosmic background nebula effect
-            drawCircle(
-                brush = Brush.radialGradient(
-                    colors = listOf(
-                        Color(0xFFFFE5E8).copy(alpha = glowIntensity * 0.3f),
-                        Color(0xFFFFD4D8).copy(alpha = glowIntensity * 0.2f),
-                        Color.Transparent
-                    ),
-                    center = androidx.compose.ui.geometry.Offset(centerX, centerY),
-                    radius = 200f
-                ),
-                center = androidx.compose.ui.geometry.Offset(centerX, centerY),
-                radius = 200f
-            )
-
-            // Energy waves expanding from center
-            val waveAlpha1 = (1f - waveRadius / 150f) * 0.6f
-            val safeWaveRadius1 = waveRadius.coerceAtLeast(0.1f)
-            if (waveAlpha1 > 0) {
+            // Heartbeat pulse rings
+            val pulseAlpha = ((140f - pulseRadius) / 70f).coerceIn(0f, 1f)
+            if (pulseAlpha > 0.1f) {
                 drawCircle(
-                    color = Color(0xFFFF6B6B).copy(alpha = waveAlpha1),
-                    radius = safeWaveRadius1,
-                    center = androidx.compose.ui.geometry.Offset(centerX, centerY),
-                    style = Stroke(width = 3f)
-                )
-
-                // Inner glow of energy wave
-                drawCircle(
-                    brush = Brush.radialGradient(
-                        colors = listOf(
-                            Color(0xFFFF6B6B).copy(alpha = waveAlpha1 * 0.3f),
-                            Color.Transparent
-                        ),
-                        center = androidx.compose.ui.geometry.Offset(centerX, centerY),
-                        radius = safeWaveRadius1
-                    ),
-                    center = androidx.compose.ui.geometry.Offset(centerX, centerY),
-                    radius = safeWaveRadius1
-                )
-            }
-
-            // Secondary energy wave
-            val waveAlpha2 = (1f - waveRadius2 / 150f) * 0.5f
-            val safeWaveRadius2 = waveRadius2.coerceAtLeast(0.1f)
-            if (waveAlpha2 > 0) {
-                drawCircle(
-                    color = Color(0xFFFF8787).copy(alpha = waveAlpha2),
-                    radius = safeWaveRadius2,
-                    center = androidx.compose.ui.geometry.Offset(centerX, centerY),
+                    color = Color(0xFFDC3545).copy(alpha = pulseAlpha * 0.3f),
+                    radius = pulseRadius,
+                    center = Offset(centerX, centerY),
                     style = Stroke(width = 2f)
                 )
+                drawCircle(
+                    color = Color(0xFFDC3545).copy(alpha = pulseAlpha * 0.15f),
+                    radius = pulseRadius + 10f,
+                    center = Offset(centerX, centerY),
+                    style = Stroke(width = 1f)
+                )
             }
 
-            // Draw particles with glow effects
-            particles.forEach { particle ->
-                // Ensure particle size is always valid (> 0)
-                val safeSize = particle.size.coerceAtLeast(0.1f)
+            // Flowing blood cells (circular motion)
+            for (i in 0..7) {
+                val angle = (flowRotation + i * 45) * Math.PI / 180
+                val radius = 90f
+                val x = centerX + cos(angle).toFloat() * radius
+                val y = centerY + sin(angle).toFloat() * radius
 
-                // Outer glow
+                val cellSize = if (i % 2 == 0) 8f else 6f
+
+                // Blood cell with subtle glow
+                drawCircle(
+                    color = Color(0xFFE85A50).copy(alpha = 0.6f),
+                    radius = cellSize * 1.5f,
+                    center = Offset(x, y)
+                )
+                drawCircle(
+                    color = Color(0xFFDC3545),
+                    radius = cellSize,
+                    center = Offset(x, y)
+                )
+            }
+
+            // Falling blood drops
+            bloodDrops.forEach { drop ->
+                // Drop shadow/glow
                 drawCircle(
                     brush = Brush.radialGradient(
                         colors = listOf(
-                            particle.color.copy(alpha = particle.alpha * 0.4f),
+                            Color(0xFFDC3545).copy(alpha = drop.alpha * 0.4f),
                             Color.Transparent
                         ),
-                        radius = safeSize * 3f
+                        radius = drop.size * 2f
                     ),
-                    center = androidx.compose.ui.geometry.Offset(particle.x, particle.y),
-                    radius = safeSize * 3f
+                    center = Offset(drop.x, drop.y),
+                    radius = drop.size * 2f
                 )
 
-                // Main particle
+                // Main drop
                 drawCircle(
-                    color = particle.color.copy(alpha = particle.alpha),
-                    center = androidx.compose.ui.geometry.Offset(particle.x, particle.y),
-                    radius = safeSize
+                    color = Color(0xFFDC3545).copy(alpha = drop.alpha),
+                    radius = drop.size,
+                    center = Offset(drop.x, drop.y)
                 )
 
-                // Inner bright core
+                // Highlight on drop
                 drawCircle(
-                    color = Color.White.copy(alpha = particle.alpha * 0.7f),
-                    center = androidx.compose.ui.geometry.Offset(particle.x, particle.y),
-                    radius = safeSize * 0.4f
+                    color = Color(0xFFFF8A80).copy(alpha = drop.alpha * 0.7f),
+                    radius = drop.size * 0.4f,
+                    center = Offset(drop.x - drop.size * 0.2f, drop.y - drop.size * 0.2f)
                 )
             }
 
-            // Outermost orbiting circles with enhanced glow
-            val outerRadius = 120f
-            for (i in 0..5) {
-                val angle = (outerRotation + i * 60) * Math.PI / 180
-                val x = centerX + cos(angle).toFloat() * outerRadius
-                val y = centerY + sin(angle).toFloat() * outerRadius
-
-                // Ensure safe radius values
-                val safeCircleScale = circleScale.coerceAtLeast(0.1f)
-
-                // Glow halo
-                drawCircle(
-                    brush = Brush.radialGradient(
-                        colors = listOf(
-                            Color(0xFFFFA0A0).copy(alpha = circleOpacity * 0.6f),
-                            Color(0xFFFFA0A0).copy(alpha = circleOpacity * 0.3f),
-                            Color.Transparent
-                        ),
-                        radius = 25f * safeCircleScale
-                    ),
-                    center = androidx.compose.ui.geometry.Offset(x, y),
-                    radius = 25f * safeCircleScale
-                )
-
-                // Main circle
-                drawCircle(
-                    color = Color(0xFFFFA0A0).copy(alpha = circleOpacity * 0.8f),
-                    radius = 12f * safeCircleScale,
-                    center = androidx.compose.ui.geometry.Offset(x, y)
-                )
-
-                // Inner bright core
-                drawCircle(
-                    color = Color.White.copy(alpha = circleOpacity * 0.6f),
-                    radius = 6f * safeCircleScale,
-                    center = androidx.compose.ui.geometry.Offset(x, y)
-                )
-            }
-
-            // Middle orbiting circles with glow
-            val middleRadius = 100f
-            for (i in 0..3) {
-                val angle = (rotation + i * 90) * Math.PI / 180
-                val x = centerX + cos(angle).toFloat() * middleRadius
-                val y = centerY + sin(angle).toFloat() * middleRadius
-                val circleSize = if (i % 2 == 0) 18f else 16f
-
-                // Ensure safe radius values
-                val safeCircleScale = circleScale.coerceAtLeast(0.1f)
-
-                // Chromatic glow (multi-color halo)
-                drawCircle(
-                    brush = Brush.radialGradient(
-                        colors = listOf(
-                            Color(0xFFFF6B6B).copy(alpha = circleOpacity * 0.7f),
-                            Color(0xFFFFB8B8).copy(alpha = circleOpacity * 0.4f),
-                            Color.Transparent
-                        ),
-                        radius = 30f * safeCircleScale
-                    ),
-                    center = androidx.compose.ui.geometry.Offset(x, y),
-                    radius = 30f * safeCircleScale
-                )
-
-                // Main circle
-                drawCircle(
-                    color = Color(0xFFFFB8B8).copy(alpha = circleOpacity),
-                    radius = circleSize * safeCircleScale,
-                    center = androidx.compose.ui.geometry.Offset(x, y)
-                )
-
-                // Inner core
-                drawCircle(
-                    color = Color.White.copy(alpha = circleOpacity * 0.8f),
-                    radius = (circleSize * 0.5f) * safeCircleScale,
-                    center = androidx.compose.ui.geometry.Offset(x, y)
-                )
-            }
-
-            // Inner orbiting circles with intense glow
-            val innerRadius = 70f
-            for (i in 0..2) {
-                val angle = (innerRotation + i * 120) * Math.PI / 180
-                val x = centerX + cos(angle).toFloat() * innerRadius
-                val y = centerY + sin(angle).toFloat() * innerRadius
-
-                // Ensure safe radius values
-                val safeCircleScale = circleScale.coerceAtLeast(0.1f)
-
-                // Intense energy glow
-                drawCircle(
-                    brush = Brush.radialGradient(
-                        colors = listOf(
-                            Color(0xFFDC3545).copy(alpha = circleOpacity * 0.8f),
-                            Color(0xFFFFD0D0).copy(alpha = circleOpacity * 0.5f),
-                            Color.Transparent
-                        ),
-                        radius = 35f * safeCircleScale
-                    ),
-                    center = androidx.compose.ui.geometry.Offset(x, y),
-                    radius = 35f * safeCircleScale
-                )
-
-                // Main circle
-                drawCircle(
-                    color = Color(0xFFFFD0D0).copy(alpha = circleOpacity * 0.9f),
-                    radius = 12f * safeCircleScale,
-                    center = androidx.compose.ui.geometry.Offset(x, y)
-                )
-
-                // Bright white core
-                drawCircle(
-                    color = Color.White.copy(alpha = circleOpacity),
-                    radius = 7f * safeCircleScale,
-                    center = androidx.compose.ui.geometry.Offset(x, y)
-                )
-            }
+            // Medical cross pattern (subtle)
+            val crossAlpha = 0.08f
+            val crossSize = 50f
+            drawLine(
+                color = Color(0xFFDC3545).copy(alpha = crossAlpha),
+                start = Offset(centerX - crossSize, centerY),
+                end = Offset(centerX + crossSize, centerY),
+                strokeWidth = 20f,
+                cap = StrokeCap.Round
+            )
+            drawLine(
+                color = Color(0xFFDC3545).copy(alpha = crossAlpha),
+                start = Offset(centerX, centerY - crossSize),
+                end = Offset(centerX, centerY + crossSize),
+                strokeWidth = 20f,
+                cap = StrokeCap.Round
+            )
         }
 
-        // Center blood group badge with enhanced effects
+        // Center blood type badge with heartbeat
         Box(
             modifier = Modifier
-                .size(140.dp)
-                .scale(badgeScale),
+                .size(130.dp)
+                .scale(heartbeatScale),
             contentAlignment = Alignment.Center
         ) {
-            // Outer glow layer
+            // Outer subtle glow
             Box(
                 modifier = Modifier
-                    .size(160.dp)
+                    .size(150.dp)
                     .background(
                         Brush.radialGradient(
                             colors = listOf(
-                                Color(0xFFFF6B6B).copy(alpha = glowIntensity * 0.4f),
+                                Color(0xFFDC3545).copy(alpha = 0.2f),
                                 Color.Transparent
                             )
                         ),
@@ -751,27 +479,23 @@ fun BloodDropWithOrbits(bloodType: String) {
             // Main badge
             Box(
                 modifier = Modifier
-                    .size(140.dp)
+                    .size(130.dp)
+                    .shadow(16.dp, CircleShape)
                     .clip(CircleShape)
                     .background(
                         Brush.radialGradient(
                             colors = listOf(
-                                Color(0xFFFF4757),
                                 Color(0xFFDC3545),
                                 Color(0xFFC82333)
                             )
                         )
-                    )
-                    .shadow(
-                        elevation = 20.dp,
-                        shape = CircleShape
                     ),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = bloodType,
-                    fontSize = 48.sp,
-                    fontWeight = FontWeight.Bold,
+                    fontSize = 46.sp,
+                    fontWeight = FontWeight.ExtraBold,
                     fontFamily = Fonts.ManropeFamily,
                     color = Color.White,
                     letterSpacing = (-1).sp
