@@ -147,7 +147,7 @@ fun BloodBankDetailScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         IconButton(
-                            onClick = { backStack.removeLast() }
+                            onClick = { backStack.removeAt(backStack.lastIndex) }
                         ) {
                             Icon(
                                 imageVector = Icons.Default.ArrowBack,
