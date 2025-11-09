@@ -2,12 +2,12 @@ package com.example.raktasewa.Screens
 
 import android.content.Intent
 import android.net.Uri
+import android.widget.Toast
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -18,22 +18,27 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
 import coil.compose.AsyncImage
+import com.example.raktasewa.API.OSRMRetrofitInstance
 import com.example.raktasewa.Constants.Fonts
 import com.example.raktasewa.Models.BloodBank
 import com.example.raktasewa.Nav.AllScreens
-import com.google.android.gms.maps.model.CameraPosition
-import com.google.android.gms.maps.model.LatLng
-import com.google.maps.android.compose.*
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import org.osmdroid.config.Configuration
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory
+import org.osmdroid.util.GeoPoint
+import org.osmdroid.views.MapView
+import org.osmdroid.views.overlay.Marker
+import org.osmdroid.views.overlay.Polyline
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.roundToInt
@@ -50,20 +55,20 @@ fun BloodBankDetailScreen(
     language: String
 ) {
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
 
-    // Calculate distance
-    val distance = remember {
-        calculateDistance(userLatitude, userLongitude, bloodBank.latitude, bloodBank.longitude)
-    }
-
-    // Estimate travel time (assuming average speed of 30 km/h in city)
-    val estimatedTime = remember { (distance / 30.0 * 60).roundToInt() }
+    // Route data
+    var routeDistance by remember { mutableDoubleStateOf(0.0) }
+    var routeDuration by remember { mutableDoubleStateOf(0.0) }
+    var routePoints by remember { mutableStateOf<List<GeoPoint>>(emptyList()) }
+    var isLoadingRoute by remember { mutableStateOf(true) }
 
     // Animation states
     var headerVisible by remember { mutableStateOf(false) }
     var mapVisible by remember { mutableStateOf(false) }
     var detailsVisible by remember { mutableStateOf(false) }
 
+    // Fetch route from OSRM on launch
     LaunchedEffect(Unit) {
         delay(100)
         headerVisible = true
@@ -71,17 +76,48 @@ fun BloodBankDetailScreen(
         mapVisible = true
         delay(300)
         detailsVisible = true
+
+        // Fetch route from OSRM
+        scope.launch {
+            try {
+                val coordinates = "$userLongitude,$userLatitude;${bloodBank.longitude},${bloodBank.latitude}"
+                val response = withContext(Dispatchers.IO) {
+                    OSRMRetrofitInstance.api.getRoute(coordinates)
+                }
+
+                if (response.isSuccessful && response.body() != null) {
+                    val osrmResponse = response.body()!!
+                    if (osrmResponse.code == "Ok" && !osrmResponse.routes.isNullOrEmpty()) {
+                        val route = osrmResponse.routes[0]
+                        routeDistance = route.distance / 1000.0 // Convert to km
+                        routeDuration = route.duration / 60.0 // Convert to minutes
+
+                        // Convert coordinates to GeoPoints
+                        routePoints = route.geometry.coordinates.map { coord ->
+                            GeoPoint(coord[1], coord[0]) // [lon, lat] -> GeoPoint(lat, lon)
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(context, "Could not load route: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+                // Fallback to straight line
+                routePoints = listOf(
+                    GeoPoint(userLatitude, userLongitude),
+                    GeoPoint(bloodBank.latitude, bloodBank.longitude)
+                )
+                routeDistance = calculateDistance(userLatitude, userLongitude, bloodBank.latitude, bloodBank.longitude)
+                routeDuration = (routeDistance / 30.0 * 60) // Estimate
+            } finally {
+                isLoadingRoute = false
+            }
+        }
     }
 
-    // Map camera position
-    val userLocation = LatLng(userLatitude, userLongitude)
-    val bloodBankLocation = LatLng(bloodBank.latitude, bloodBank.longitude)
-
-    // Center map between user and blood bank
-    val centerLat = (userLatitude + bloodBank.latitude) / 2
-    val centerLng = (userLongitude + bloodBank.longitude) / 2
-    val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(LatLng(centerLat, centerLng), 13f)
+    // Initialize osmdroid configuration
+    LaunchedEffect(Unit) {
+        Configuration.getInstance().userAgentValue = context.packageName
     }
 
     Box(
@@ -131,7 +167,7 @@ fun BloodBankDetailScreen(
                 }
             }
 
-            // Map Section
+            // Map Section with OpenStreetMap
             AnimatedVisibility(
                 visible = mapVisible,
                 enter = fadeIn(tween(500)) + scaleIn(
@@ -150,43 +186,87 @@ fun BloodBankDetailScreen(
                     shape = RoundedCornerShape(20.dp),
                     elevation = CardDefaults.cardElevation(8.dp)
                 ) {
-                    GoogleMap(
-                        modifier = Modifier.fillMaxSize(),
-                        cameraPositionState = cameraPositionState,
-                        properties = MapProperties(isMyLocationEnabled = false),
-                        uiSettings = MapUiSettings(
-                            zoomControlsEnabled = false,
-                            compassEnabled = true
-                        )
-                    ) {
-                        // User marker
-                        Marker(
-                            state = MarkerState(position = userLocation),
-                            title = if (language == "Nep") "तपाईको स्थान" else "Your Location",
-                            icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)
+                    Box(modifier = Modifier.fillMaxSize()) {
+                        // OpenStreetMap
+                        AndroidView(
+                            factory = { ctx ->
+                                MapView(ctx).apply {
+                                    setTileSource(TileSourceFactory.MAPNIK)
+                                    setMultiTouchControls(true)
+
+                                    // Center map between user and blood bank
+                                    val centerLat = (userLatitude + bloodBank.latitude) / 2
+                                    val centerLng = (userLongitude + bloodBank.longitude) / 2
+                                    controller.setZoom(13.0)
+                                    controller.setCenter(GeoPoint(centerLat, centerLng))
+
+                                    // Add user marker
+                                    val userMarker = Marker(this).apply {
+                                        position = GeoPoint(userLatitude, userLongitude)
+                                        title = if (language == "Nep") "तपाईको स्थान" else "Your Location"
+                                        setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+                                    }
+                                    overlays.add(userMarker)
+
+                                    // Add blood bank marker
+                                    val bloodBankMarker = Marker(this).apply {
+                                        position = GeoPoint(bloodBank.latitude, bloodBank.longitude)
+                                        title = bloodBank.name
+                                        snippet = bloodBank.address
+                                        setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+                                    }
+                                    overlays.add(bloodBankMarker)
+
+                                    // Add polyline (will be updated when route loads)
+                                    if (routePoints.isNotEmpty()) {
+                                        val polyline = Polyline(this).apply {
+                                            setPoints(routePoints)
+                                            outlinePaint.color = android.graphics.Color.parseColor("#DC3545")
+                                            outlinePaint.strokeWidth = 10f
+                                        }
+                                        overlays.add(polyline)
+                                    }
+                                }
+                            },
+                            update = { mapView ->
+                                // Update route when loaded
+                                if (routePoints.isNotEmpty() && !isLoadingRoute) {
+                                    // Clear old polylines
+                                    mapView.overlays.removeAll { it is Polyline }
+
+                                    // Add new route polyline
+                                    val polyline = Polyline(mapView).apply {
+                                        setPoints(routePoints)
+                                        outlinePaint.color = android.graphics.Color.parseColor("#DC3545")
+                                        outlinePaint.strokeWidth = 10f
+                                    }
+                                    mapView.overlays.add(0, polyline) // Add at beginning so markers are on top
+                                    mapView.invalidate()
+                                }
+                            },
+                            modifier = Modifier.fillMaxSize()
                         )
 
-                        // Blood bank marker
-                        Marker(
-                            state = MarkerState(position = bloodBankLocation),
-                            title = bloodBank.name,
-                            snippet = bloodBank.address,
-                            icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)
-                        )
-
-                        // Draw polyline (route)
-                        Polyline(
-                            points = listOf(userLocation, bloodBankLocation),
-                            color = Color(0xFFDC3545),
-                            width = 10f
-                        )
+                        // Loading indicator
+                        if (isLoadingRoute) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .background(Color.Black.copy(alpha = 0.2f)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                CircularProgressIndicator(
+                                    color = Color(0xFFDC3545)
+                                )
+                            }
+                        }
                     }
                 }
             }
 
             // Distance and Time Card
             AnimatedVisibility(
-                visible = detailsVisible,
+                visible = detailsVisible && !isLoadingRoute,
                 enter = fadeIn(tween(500)) + slideInVertically(
                     initialOffsetY = { it / 4 },
                     animationSpec = spring(
@@ -222,7 +302,7 @@ fun BloodBankDetailScreen(
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                text = "%.1f km".format(distance),
+                                text = "%.1f km".format(routeDistance),
                                 fontSize = 24.sp,
                                 fontWeight = FontWeight.Bold,
                                 fontFamily = Fonts.ManropeFamily,
@@ -256,7 +336,7 @@ fun BloodBankDetailScreen(
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                text = "$estimatedTime min",
+                                text = "${routeDuration.roundToInt()} min",
                                 fontSize = 24.sp,
                                 fontWeight = FontWeight.Bold,
                                 fontFamily = Fonts.ManropeFamily,
@@ -469,12 +549,12 @@ fun BloodBankDetailScreen(
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp)
                 ) {
-                    // Get Directions Button
+                    // Get Directions Button - Opens in any map app
                     Button(
                         onClick = {
-                            val uri = "google.navigation:q=${bloodBank.latitude},${bloodBank.longitude}"
+                            // Generic geo: URI that works with any map app (OSM, Google Maps, etc.)
+                            val uri = "geo:${bloodBank.latitude},${bloodBank.longitude}?q=${bloodBank.latitude},${bloodBank.longitude}(${bloodBank.name})"
                             val intent = Intent(Intent.ACTION_VIEW, Uri.parse(uri))
-                            intent.setPackage("com.google.android.apps.maps")
                             context.startActivity(intent)
                         },
                         modifier = Modifier.fillMaxWidth(),
