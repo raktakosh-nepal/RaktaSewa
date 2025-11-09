@@ -14,7 +14,9 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
@@ -255,9 +257,43 @@ fun LoadingScreen(backStack: SnapshotStateList<AllScreens>, text: String, bloodT
 fun BloodDropWithOrbits(bloodType: String) {
     val infiniteTransition = rememberInfiniteTransition(label = "")
 
+    // Main rotation for orbiting circles
     val rotation by infiniteTransition.animateFloat(
         initialValue = 0f,
         targetValue = 360f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(3000, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = ""
+    )
+
+    // Pulsing effect for center badge
+    val badgeScale by infiniteTransition.animateFloat(
+        initialValue = 0.95f,
+        targetValue = 1.05f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1500, easing = EaseInOutCubic),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = ""
+    )
+
+    // Pulsing opacity for circles
+    val circleOpacity by infiniteTransition.animateFloat(
+        initialValue = 0.4f,
+        targetValue = 0.8f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1200, easing = EaseInOutSine),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = ""
+    )
+
+    // Inner ring rotation (opposite direction)
+    val innerRotation by infiniteTransition.animateFloat(
+        initialValue = 360f,
+        targetValue = 0f,
         animationSpec = infiniteRepeatable(
             animation = tween(4000, easing = LinearEasing),
             repeatMode = RepeatMode.Restart
@@ -266,33 +302,55 @@ fun BloodDropWithOrbits(bloodType: String) {
     )
 
     Box(
-        modifier = Modifier.size(280.dp),
+        modifier = Modifier.size(300.dp),
         contentAlignment = Alignment.Center
     ) {
-        // Orbiting circles
-        Canvas(modifier = Modifier.size(240.dp)) {
+        // Outer orbiting circles (4 circles)
+        Canvas(modifier = Modifier.size(260.dp)) {
             val centerX = size.width / 2
             val centerY = size.height / 2
-            val radius = 90f
+            val radius = 100f
 
-            // Draw four rotating circles
             for (i in 0..3) {
                 val angle = (rotation + i * 90) * Math.PI / 180
                 val x = centerX + cos(angle).toFloat() * radius
                 val y = centerY + sin(angle).toFloat() * radius
 
+                // Varying sizes for more dynamic effect
+                val circleSize = if (i % 2 == 0) 16f else 14f
+
                 drawCircle(
-                    color = Color(0xFFFFB8B8).copy(alpha = 0.6f),
-                    radius = 18f,
+                    color = Color(0xFFFFB8B8).copy(alpha = circleOpacity),
+                    radius = circleSize,
                     center = androidx.compose.ui.geometry.Offset(x, y)
                 )
             }
         }
 
-        // Center blood group badge
+        // Inner orbiting circles (3 circles, smaller and faster)
+        Canvas(modifier = Modifier.size(200.dp)) {
+            val centerX = size.width / 2
+            val centerY = size.height / 2
+            val radius = 70f
+
+            for (i in 0..2) {
+                val angle = (innerRotation + i * 120) * Math.PI / 180
+                val x = centerX + cos(angle).toFloat() * radius
+                val y = centerY + sin(angle).toFloat() * radius
+
+                drawCircle(
+                    color = Color(0xFFFFD0D0).copy(alpha = circleOpacity * 0.7f),
+                    radius = 10f,
+                    center = androidx.compose.ui.geometry.Offset(x, y)
+                )
+            }
+        }
+
+        // Center blood group badge with pulsing animation
         Box(
             modifier = Modifier
                 .size(140.dp)
+                .scale(badgeScale)
                 .clip(CircleShape)
                 .background(
                     Brush.radialGradient(
@@ -301,6 +359,10 @@ fun BloodDropWithOrbits(bloodType: String) {
                             Color(0xFFC82333)
                         )
                     )
+                )
+                .shadow(
+                    elevation = 12.dp,
+                    shape = CircleShape
                 ),
             contentAlignment = Alignment.Center
         ) {

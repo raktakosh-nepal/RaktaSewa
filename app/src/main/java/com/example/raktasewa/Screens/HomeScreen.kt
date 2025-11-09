@@ -229,7 +229,7 @@ fun HomeScreen(
             modifier = Modifier
                 .fillMaxSize()
         ) {
-            Spacer(modifier = Modifier.height(330.dp))
+            Spacer(modifier = Modifier.height(290.dp))
 
             AnimatedVisibility(
                 visible = bottomSheetVisible,
@@ -302,21 +302,21 @@ fun HomeScreen(
                                         "रक्त बैंक खोज्नुहोस्"
                                     else
                                         "Find Blood Banks Near You",
-                                    fontSize = 22.sp,
+                                    fontSize = 20.sp,
                                     fontWeight = FontWeight.Bold,
                                     fontFamily = Fonts.ManropeFamily,
                                     color = Color(0xFF2C3E50),
-                                    letterSpacing = (-0.3).sp
+                                    letterSpacing = (-0.2).sp
                                 )
 
-                                Spacer(modifier = Modifier.height(4.dp))
+                                Spacer(modifier = Modifier.height(6.dp))
 
                                 Text(
                                     text = if (language == "Nep")
                                         "रक्त समूह चयन गर्नुहोस्"
                                     else
                                         "Select your required blood group to get started",
-                                    fontSize = 13.sp,
+                                    fontSize = 12.sp,
                                     fontFamily = Fonts.ManropeFamily,
                                     color = Color(0xFF999999),
                                     fontWeight = FontWeight.Normal,
@@ -497,59 +497,26 @@ fun EnhancedBloodTypeCard(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
-                // Blood drop icon
-                Box(
-                    modifier = Modifier
-                        .size(52.dp)
-                        .clip(CircleShape)
-                        .background(
-                            if (isSelected)
-                                Brush.radialGradient(
-                                    colors = listOf(
-                                        Color(0xFFFF9B8E),
-                                        Color(0xFFE85A50)
-                                    )
-                                )
-                            else
-                                Brush.radialGradient(
-                                    colors = listOf(
-                                        Color(0xFFFFF0EE),
-                                        Color(0xFFFFE5E2)
-                                    )
-                                )
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "🩸",
-                        fontSize = 26.sp
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(12.dp))
-
                 Text(
                     text = bloodGroup,
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.ExtraBold,
+                    fontSize = 32.sp,
+                    fontWeight = FontWeight.Bold,
                     fontFamily = Fonts.ManropeFamily,
                     color = if (isSelected) Color(0xFFE85A50) else Color(0xFF2C3E50),
                     letterSpacing = (-0.5).sp
                 )
-            }
 
-            // Checkmark for selected state
-            if (isSelected) {
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(12.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.CheckCircle,
-                        contentDescription = "Selected",
-                        tint = Color(0xFFE85A50),
-                        modifier = Modifier.size(24.dp)
+                // Underline for selected state
+                if (isSelected) {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Box(
+                        modifier = Modifier
+                            .width(40.dp)
+                            .height(3.dp)
+                            .background(
+                                Color(0xFFE85A50),
+                                RoundedCornerShape(2.dp)
+                            )
                     )
                 }
             }
