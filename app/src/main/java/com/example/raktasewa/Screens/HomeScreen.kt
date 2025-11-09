@@ -379,7 +379,7 @@ fun HomeScreen(
                                 onClick = {
                                     backStack.add(
                                         AllScreens.LoadinScreen(
-                                            text = if (language == "Nep")
+                                            message = if (language == "Nep")
                                                 "तपाईंको स्थान प्राप्त गर्दै..."
                                             else
                                                 "Getting your location...",
