@@ -12,28 +12,25 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.itemsIndexed
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -42,9 +39,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.raktasewa.Constants.Fonts
 import com.example.raktasewa.Nav.AllScreens
 import com.example.raktasewa.ViewModels.SearchBloodGroupViewModel
-import com.example.raktasewa.ui.theme.*
 import kotlinx.coroutines.delay
-import kotlin.math.sin
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "ViewModelConstructorInComposable")
 @Composable
@@ -55,30 +50,71 @@ fun HomeScreen(
 ) {
     val data = listOf("A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-")
 
-    // Animation states - faster timing!
+    // Animation states
     var topSectionVisible by remember { mutableStateOf(false) }
     var bottomSheetVisible by remember { mutableStateOf(false) }
     var bloodTypesVisible by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
-        delay(50) // Faster
+        delay(50)
         topSectionVisible = true
-        delay(250) // Reduced delay
+        delay(250)
         bottomSheetVisible = true
-        delay(350) // Reduced delay
+        delay(350)
         bloodTypesVisible = true
     }
 
-    // More dynamic floating animation for decorative elements
+    // Oscillating animations for background circles
     val infiniteTransition = rememberInfiniteTransition(label = "")
-    val floatOffset by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 30f, // Increased range
+
+    val circle1X by infiniteTransition.animateFloat(
+        initialValue = 0.2f,
+        targetValue = 0.15f,
         animationSpec = infiniteRepeatable(
-            animation = tween(2000, easing = EaseInOutSine), // Faster
+            animation = tween(4000, easing = EaseInOutSine),
             repeatMode = RepeatMode.Reverse
         ),
-        label = ""
+        label = "circle1X"
+    )
+
+    val circle1Y by infiniteTransition.animateFloat(
+        initialValue = 0.15f,
+        targetValue = 0.2f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(3500, easing = EaseInOutSine),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "circle1Y"
+    )
+
+    val circle2X by infiniteTransition.animateFloat(
+        initialValue = 0.85f,
+        targetValue = 0.8f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(4500, easing = EaseInOutSine),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "circle2X"
+    )
+
+    val circle2Y by infiniteTransition.animateFloat(
+        initialValue = 0.25f,
+        targetValue = 0.3f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(3800, easing = EaseInOutSine),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "circle2Y"
+    )
+
+    val floatOffset by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 15f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(3000, easing = EaseInOutSine),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "float"
     )
 
     Box(
@@ -104,21 +140,21 @@ fun HomeScreen(
                     )
             )
 
-            // Decorative circles
+            // Oscillating decorative circles
             Canvas(
                 modifier = Modifier
                     .fillMaxSize()
-                    .alpha(0.1f)
+                    .alpha(0.12f)
             ) {
                 drawCircle(
                     color = Color.White,
                     radius = 150.dp.toPx(),
-                    center = center.copy(x = size.width * 0.2f, y = size.height * 0.15f)
+                    center = Offset(size.width * circle1X, size.height * circle1Y)
                 )
                 drawCircle(
                     color = Color.White,
                     radius = 100.dp.toPx(),
-                    center = center.copy(x = size.width * 0.85f, y = size.height * 0.25f)
+                    center = Offset(size.width * circle2X, size.height * circle2Y)
                 )
             }
 
@@ -128,7 +164,7 @@ fun HomeScreen(
                         slideInVertically(
                             initialOffsetY = { -150 },
                             animationSpec = spring(
-                                dampingRatio = Spring.DampingRatioLowBouncy, // More bounce!
+                                dampingRatio = Spring.DampingRatioLowBouncy,
                                 stiffness = Spring.StiffnessMediumLow
                             )
                         ) +
@@ -222,10 +258,9 @@ fun HomeScreen(
             }
         }
 
-        // Bottom Sheet Card with slide-up animation
+        // Bottom Sheet with LazyColumn (Properly Scrollable)
         Column(
-            modifier = Modifier
-                .fillMaxSize()
+            modifier = Modifier.fillMaxSize()
         ) {
             Spacer(modifier = Modifier.height(320.dp))
 
@@ -234,7 +269,7 @@ fun HomeScreen(
                 enter = slideInVertically(
                     initialOffsetY = { it },
                     animationSpec = spring(
-                        dampingRatio = Spring.DampingRatioLowBouncy, // More bouncy!
+                        dampingRatio = Spring.DampingRatioLowBouncy,
                         stiffness = Spring.StiffnessMediumLow
                     )
                 ) +
@@ -256,201 +291,214 @@ fun HomeScreen(
                             spotColor = Color(0xFF000000).copy(alpha = 0.2f)
                         ),
                     shape = RoundedCornerShape(topStart = 36.dp, topEnd = 36.dp),
-                    color = Color.White
+                    color = Color(0xFFFAFAFA)
                 ) {
-                    Column(
+                    LazyColumn(
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(top = 32.dp, start = 28.dp, end = 28.dp, bottom = 24.dp)
+                            .padding(horizontal = 24.dp),
+                        contentPadding = PaddingValues(top = 24.dp, bottom = 32.dp)
                     ) {
                         // Drag handle
-                        Box(
-                            modifier = Modifier
-                                .width(50.dp)
-                                .height(5.dp)
-                                .clip(RoundedCornerShape(3.dp))
-                                .background(Color(0xFFE0E0E0))
-                                .align(Alignment.CenterHorizontally)
-                        )
-
-                        Spacer(modifier = Modifier.height(28.dp))
-
-                        // Title with icon
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
+                        item {
                             Box(
                                 modifier = Modifier
-                                    .size(48.dp)
-                                    .clip(RoundedCornerShape(12.dp))
-                                    .background(
-                                        Brush.linearGradient(
-                                            colors = listOf(
-                                                Color(0xFFFFE5E2),
-                                                Color(0xFFFFD4CF)
-                                            )
-                                        )
-                                    ),
+                                    .fillMaxWidth()
+                                    .padding(vertical = 8.dp),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Text(
-                                    text = "🔍",
-                                    fontSize = 24.sp
+                                Box(
+                                    modifier = Modifier
+                                        .width(50.dp)
+                                        .height(5.dp)
+                                        .clip(RoundedCornerShape(3.dp))
+                                        .background(Color(0xFFDDDDDD))
                                 )
                             }
+                        }
 
-                            Spacer(modifier = Modifier.width(16.dp))
+                        item { Spacer(modifier = Modifier.height(16.dp)) }
 
+                        // Title
+                        item {
                             Text(
                                 text = if (language == "Nep")
                                     "रक्त समूह चयन गर्नुहोस्"
                                 else
-                                    "Select your required blood group",
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Bold,
+                                    "Find Blood Banks Near You",
+                                fontSize = 26.sp,
+                                fontWeight = FontWeight.ExtraBold,
                                 fontFamily = Fonts.ManropeFamily,
-                                color = Color(0xFF2C3E50),
-                                letterSpacing = (-0.2).sp
+                                color = Color(0xFF1A1A1A),
+                                letterSpacing = (-0.5).sp,
+                                modifier = Modifier.fillMaxWidth(),
+                                textAlign = TextAlign.Center
                             )
                         }
 
-                        Spacer(modifier = Modifier.height(32.dp))
+                        item { Spacer(modifier = Modifier.height(8.dp)) }
 
-                        // Blood Group Grid with staggered animation
-                        LazyVerticalGrid(
-                            columns = GridCells.Fixed(2),
-                            contentPadding = PaddingValues(0.dp),
-                            verticalArrangement = Arrangement.spacedBy(16.dp),
-                            horizontalArrangement = Arrangement.spacedBy(16.dp),
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            itemsIndexed(data) { index, bloodGroup ->
-                                var animationProgress by remember { mutableStateOf(0f) }
-
-                                LaunchedEffect(bloodTypesVisible) {
-                                    if (bloodTypesVisible) {
-                                        delay(index * 80L) // Staggered delay
-                                        animationProgress = 1f
-                                    }
-                                }
-
-                                val scale by animateFloatAsState(
-                                    targetValue = if (animationProgress > 0f) 1f else 0.7f,
-                                    animationSpec = spring(
-                                        dampingRatio = Spring.DampingRatioMediumBouncy,
-                                        stiffness = Spring.StiffnessMedium
-                                    ),
-                                    label = "card_scale_$index"
-                                )
-
-                                val alpha by animateFloatAsState(
-                                    targetValue = animationProgress,
-                                    animationSpec = tween(500),
-                                    label = "card_alpha_$index"
-                                )
-
-                                val offsetY by animateDpAsState(
-                                    targetValue = if (animationProgress > 0f) 0.dp else 30.dp,
-                                    animationSpec = spring(
-                                        dampingRatio = Spring.DampingRatioMediumBouncy,
-                                        stiffness = Spring.StiffnessMedium
-                                    ),
-                                    label = "card_offset_$index"
-                                )
-
-                                Box(
-                                    modifier = Modifier
-                                        .scale(scale)
-                                        .alpha(alpha)
-                                        .offset(y = offsetY)
-                                ) {
-                                    EnhancedBloodTypeCard(
-                                        bloodGroup = bloodGroup,
-                                        isSelected = viewModel.selectedBloodGroup == bloodGroup,
-                                        onClick = { viewModel.selectBloodGroup(bloodGroup) }
-                                    )
-                                }
-                            }
+                        // Subtitle
+                        item {
+                            Text(
+                                text = if (language == "Nep")
+                                    "आवश्यक रक्त समूह चयन गर्नुहोस्"
+                                else
+                                    "Select your required blood group to get started",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Normal,
+                                fontFamily = Fonts.ManropeFamily,
+                                color = Color(0xFF888888),
+                                letterSpacing = 0.sp,
+                                modifier = Modifier.fillMaxWidth(),
+                                textAlign = TextAlign.Center
+                            )
                         }
 
-                        Spacer(modifier = Modifier.height(24.dp))
+                        item { Spacer(modifier = Modifier.height(32.dp)) }
 
-                        // Search Button with more energetic animation
-                        AnimatedVisibility(
-                            visible = viewModel.selectedBloodGroup != null,
-                            enter = fadeIn(tween(300)) +
-                                    scaleIn(
-                                        initialScale = 0.7f, // More dramatic entrance
-                                        animationSpec = spring(
-                                            dampingRatio = Spring.DampingRatioLowBouncy,
-                                            stiffness = Spring.StiffnessMedium
-                                        )
-                                    ) +
-                                    slideInVertically(
-                                        initialOffsetY = { it / 3 },
-                                        animationSpec = spring(
-                                            dampingRatio = Spring.DampingRatioLowBouncy,
-                                            stiffness = Spring.StiffnessMedium
-                                        )
-                                    )
-                        ) {
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally
+                        // Blood Group Grid with improved animation
+                        items(data.chunked(2)) { rowItems ->
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(16.dp)
                             ) {
-                                PremiumSearchButton(
-                                    text = if (language == "Nep")
-                                        "रक्त बैंकहरू खोज्नुहोस्"
-                                    else
-                                        "Search Blood Banks",
-                                    onClick = {
-                                        backStack.add(
-                                            AllScreens.LoadinScreen(
-                                                message = if (language == "Nep")
-                                                    "रक्त बैंकहरूबाट डाटा ल्याउँदै"
-                                                else
-                                                    "Fetching blood banks...",
-                                                bloodType = viewModel.selectedBloodGroup!!,
-                                                language = language
-                                            )
+                                rowItems.forEach { bloodGroup ->
+                                    val index = data.indexOf(bloodGroup)
+                                    var animationProgress by remember { mutableStateOf(0f) }
+
+                                    LaunchedEffect(bloodTypesVisible) {
+                                        if (bloodTypesVisible) {
+                                            delay(index * 80L) // Staggered delay
+                                            animationProgress = 1f
+                                        }
+                                    }
+
+                                    val scale by animateFloatAsState(
+                                        targetValue = if (animationProgress > 0f) 1f else 0.7f,
+                                        animationSpec = spring(
+                                            dampingRatio = Spring.DampingRatioMediumBouncy,
+                                            stiffness = Spring.StiffnessMedium
+                                        ),
+                                        label = "card_scale_$index"
+                                    )
+
+                                    val alpha by animateFloatAsState(
+                                        targetValue = animationProgress,
+                                        animationSpec = tween(500),
+                                        label = "card_alpha_$index"
+                                    )
+
+                                    val offsetY by animateDpAsState(
+                                        targetValue = if (animationProgress > 0f) 0.dp else 30.dp,
+                                        animationSpec = spring(
+                                            dampingRatio = Spring.DampingRatioMediumBouncy,
+                                            stiffness = Spring.StiffnessMedium
+                                        ),
+                                        label = "card_offset_$index"
+                                    )
+
+                                    Box(
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .scale(scale)
+                                            .alpha(alpha)
+                                            .offset(y = offsetY)
+                                    ) {
+                                        EnhancedBloodTypeCard(
+                                            bloodGroup = bloodGroup,
+                                            isSelected = viewModel.selectedBloodGroup == bloodGroup,
+                                            onClick = { viewModel.selectBloodGroup(bloodGroup) }
                                         )
                                     }
-                                )
+                                }
+                            }
+                            Spacer(modifier = Modifier.height(16.dp))
+                        }
 
-                                Spacer(modifier = Modifier.height(16.dp))
+                        item { Spacer(modifier = Modifier.height(24.dp)) }
 
-                                // Emergency Search Link
-                                Row(
-                                    modifier = Modifier.clickable {
-                                        backStack.add(
-                                            AllScreens.LoadinScreen(
-                                                message = if (language == "Nep")
-                                                    "आपतकालीन खोज"
-                                                else
-                                                    "Emergency search...",
-                                                bloodType = viewModel.selectedBloodGroup!!,
-                                                language = language
+                        // Search Button
+                        item {
+                            AnimatedVisibility(
+                                visible = viewModel.selectedBloodGroup != null,
+                                enter = fadeIn(tween(300)) +
+                                        scaleIn(
+                                            initialScale = 0.7f,
+                                            animationSpec = spring(
+                                                dampingRatio = Spring.DampingRatioLowBouncy,
+                                                stiffness = Spring.StiffnessMedium
                                             )
                                         )
-                                    },
-                                    verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Column(
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    modifier = Modifier.fillMaxWidth()
                                 ) {
-                                    Text(
-                                        text = "🚨",
-                                        fontSize = 18.sp
-                                    )
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Text(
+                                    PremiumSearchButton(
                                         text = if (language == "Nep")
-                                            "आपतकालीन खोज"
+                                            "रक्त बैंकहरू खोज्नुहोस्"
                                         else
-                                            "Emergency Search",
-                                        fontSize = 15.sp,
-                                        fontWeight = FontWeight.SemiBold,
-                                        fontFamily = Fonts.ManropeFamily,
-                                        color = Color(0xFFDC3545),
-                                        letterSpacing = 0.sp
+                                            "Search Blood Banks",
+                                        onClick = {
+                                            backStack.add(
+                                                AllScreens.LoadinScreen(
+                                                    message = if (language == "Nep")
+                                                        "रक्त बैंकहरूबाट डाटा ल्याउँदै"
+                                                    else
+                                                        "Fetching blood banks...",
+                                                    bloodType = viewModel.selectedBloodGroup!!,
+                                                    language = language
+                                                )
+                                            )
+                                        }
                                     )
+
+                                    Spacer(modifier = Modifier.height(16.dp))
+
+                                    // Emergency Search Link
+                                    Surface(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clickable {
+                                                backStack.add(
+                                                    AllScreens.LoadinScreen(
+                                                        message = if (language == "Nep")
+                                                            "आपतकालीन खोज"
+                                                        else
+                                                            "Emergency search...",
+                                                        bloodType = viewModel.selectedBloodGroup!!,
+                                                        language = language
+                                                    )
+                                                )
+                                            },
+                                        shape = RoundedCornerShape(16.dp),
+                                        color = Color.Transparent,
+                                        border = BorderStroke(2.dp, Color(0xFFDC3545))
+                                    ) {
+                                        Row(
+                                            modifier = Modifier.padding(vertical = 16.dp),
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.Center
+                                        ) {
+                                            Text(
+                                                text = "🚨",
+                                                fontSize = 20.sp
+                                            )
+                                            Spacer(modifier = Modifier.width(10.dp))
+                                            Text(
+                                                text = if (language == "Nep")
+                                                    "आपतकालीन खोज"
+                                                else
+                                                    "Emergency Search",
+                                                fontSize = 16.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                fontFamily = Fonts.ManropeFamily,
+                                                color = Color(0xFFDC3545),
+                                                letterSpacing = 0.sp
+                                            )
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -468,18 +516,9 @@ fun EnhancedBloodTypeCard(
     onClick: () -> Unit
 ) {
     val scale by animateFloatAsState(
-        targetValue = if (isSelected) 1.05f else 1.0f, // More pronounced
+        targetValue = if (isSelected) 1.03f else 1.0f,
         animationSpec = spring(
-            dampingRatio = Spring.DampingRatioLowBouncy, // More bouncy!
-            stiffness = Spring.StiffnessMedium
-        ),
-        label = ""
-    )
-
-    val elevation by animateDpAsState(
-        targetValue = if (isSelected) 16.dp else 4.dp, // Higher elevation
-        animationSpec = spring(
-            dampingRatio = Spring.DampingRatioMediumBouncy,
+            dampingRatio = Spring.DampingRatioLowBouncy,
             stiffness = Spring.StiffnessMedium
         ),
         label = ""
@@ -489,12 +528,7 @@ fun EnhancedBloodTypeCard(
         modifier = Modifier
             .scale(scale)
             .fillMaxWidth()
-            .height(120.dp)
-            .shadow(
-                elevation = elevation,
-                shape = RoundedCornerShape(20.dp),
-                spotColor = if (isSelected) Color(0xFFE85A50).copy(alpha = 0.4f) else Color.Black.copy(alpha = 0.1f)
-            )
+            .height(140.dp)
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
@@ -504,9 +538,12 @@ fun EnhancedBloodTypeCard(
         colors = CardDefaults.cardColors(
             containerColor = if (isSelected) Color(0xFFFFF5F4) else Color.White
         ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = if (isSelected) 8.dp else 2.dp
+        ),
         border = BorderStroke(
-            width = if (isSelected) 3.dp else 1.5.dp,
-            color = if (isSelected) Color(0xFFE85A50) else Color(0xFFE8E8E8)
+            width = if (isSelected) 3.dp else 1.dp,
+            color = if (isSelected) Color(0xFFE85A50) else Color(0xFFE0E0E0)
         )
     ) {
         Box(
@@ -520,19 +557,18 @@ fun EnhancedBloodTypeCard(
                 Text(
                     text = bloodGroup,
                     fontSize = 32.sp,
-                    fontWeight = FontWeight.Bold,
+                    fontWeight = FontWeight.ExtraBold,
                     fontFamily = Fonts.ManropeFamily,
                     color = if (isSelected) Color(0xFFE85A50) else Color(0xFF2C3E50),
-                    letterSpacing = (-0.5).sp
+                    letterSpacing = (-0.8).sp
                 )
 
-                // Underline for selected state
                 if (isSelected) {
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
                     Box(
                         modifier = Modifier
                             .width(40.dp)
-                            .height(3.dp)
+                            .height(4.dp)
                             .background(
                                 Color(0xFFE85A50),
                                 RoundedCornerShape(2.dp)
@@ -552,18 +588,9 @@ fun PremiumSearchButton(
     var isPressed by remember { mutableStateOf(false) }
 
     val scale by animateFloatAsState(
-        targetValue = if (isPressed) 0.92f else 1f, // More dramatic press
+        targetValue = if (isPressed) 0.96f else 1f,
         animationSpec = spring(
-            dampingRatio = Spring.DampingRatioLowBouncy, // More bouncy!
-            stiffness = Spring.StiffnessHigh
-        ),
-        label = ""
-    )
-
-    val elevation by animateDpAsState(
-        targetValue = if (isPressed) 4.dp else 16.dp,
-        animationSpec = spring(
-            dampingRatio = Spring.DampingRatioMediumBouncy,
+            dampingRatio = Spring.DampingRatioLowBouncy,
             stiffness = Spring.StiffnessHigh
         ),
         label = ""
@@ -577,19 +604,15 @@ fun PremiumSearchButton(
         modifier = Modifier
             .fillMaxWidth()
             .height(68.dp)
-            .scale(scale)
-            .shadow(
-                elevation = elevation,
-                shape = RoundedCornerShape(20.dp),
-                spotColor = Color(0xFFE85A50).copy(alpha = 0.5f)
-            ),
-        shape = RoundedCornerShape(20.dp),
+            .scale(scale),
+        shape = RoundedCornerShape(16.dp),
         colors = ButtonDefaults.buttonColors(
             containerColor = Color.Transparent
         ),
         contentPadding = PaddingValues(0.dp),
         elevation = ButtonDefaults.buttonElevation(
-            defaultElevation = 0.dp
+            defaultElevation = 8.dp,
+            pressedElevation = 2.dp
         )
     ) {
         Box(
@@ -599,8 +622,7 @@ fun PremiumSearchButton(
                     Brush.horizontalGradient(
                         colors = listOf(
                             Color(0xFFE85A50),
-                            Color(0xFFDC4F45),
-                            Color(0xFFE85A50)
+                            Color(0xFFDC4F45)
                         )
                     )
                 ),
@@ -608,11 +630,11 @@ fun PremiumSearchButton(
         ) {
             Text(
                 text = text,
-                fontSize = 18.sp,
+                fontSize = 17.sp,
                 fontWeight = FontWeight.Bold,
                 fontFamily = Fonts.ManropeFamily,
                 color = Color.White,
-                letterSpacing = 0.sp
+                letterSpacing = 0.2.sp
             )
         }
     }
