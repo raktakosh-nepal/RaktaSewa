@@ -5,6 +5,7 @@ import android.net.Uri
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.*
 import androidx.compose.animation.fadeIn
+import androidx.compose.animation.scaleIn
 import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -168,15 +169,27 @@ fun BloodBanksResultScreen(
                         var visible by remember { mutableStateOf(false) }
 
                         LaunchedEffect(Unit) {
-                            delay(index * 50L)
+                            delay(index * 40L) // Faster staggering
                             visible = true
                         }
 
                         AnimatedVisibility(
                             visible = visible,
-                            enter = fadeIn() + slideInVertically(
-                                initialOffsetY = { it / 2 }
-                            )
+                            enter = fadeIn(tween(400)) +
+                                    slideInVertically(
+                                        initialOffsetY = { it / 2 },
+                                        animationSpec = spring(
+                                            dampingRatio = Spring.DampingRatioMediumBouncy,
+                                            stiffness = Spring.StiffnessMedium
+                                        )
+                                    ) +
+                                    scaleIn(
+                                        initialScale = 0.9f,
+                                        animationSpec = spring(
+                                            dampingRatio = Spring.DampingRatioMediumBouncy,
+                                            stiffness = Spring.StiffnessMedium
+                                        )
+                                    )
                         ) {
                             BloodBankCard(
                                 bloodBank = bloodBank,

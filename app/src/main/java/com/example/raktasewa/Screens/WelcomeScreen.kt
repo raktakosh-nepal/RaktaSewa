@@ -3,7 +3,9 @@ package com.example.raktasewa.Screens
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.*
 import androidx.compose.animation.fadeIn
+import androidx.compose.animation.scaleIn
 import androidx.compose.animation.slideInVertically
+import androidx.compose.material3.Surface
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -20,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -43,44 +46,75 @@ fun WelcomeScreen(backStack: SnapshotStateList<AllScreens>) {
 
     // Trigger animations in sequence
     LaunchedEffect(Unit) {
-        delay(200)
+        delay(100) // Faster start
         contentVisible = true
     }
 
     // Infinite animations for floating elements
     val infiniteTransition = rememberInfiniteTransition(label = "background_animation")
 
-    // Floating orb 1 animation
+    // Floating orb 1 animation - more dynamic movement
     val orb1Offset by infiniteTransition.animateFloat(
         initialValue = 0f,
-        targetValue = 30f,
+        targetValue = 50f, // Increased range
         animationSpec = infiniteRepeatable(
-            animation = tween(4000, easing = EaseInOutSine),
+            animation = tween(2500, easing = EaseInOutSine), // Faster
             repeatMode = RepeatMode.Reverse
         ),
         label = "orb1"
     )
 
-    // Floating orb 2 animation
+    // Floating orb 2 animation - more dynamic movement
     val orb2Offset by infiniteTransition.animateFloat(
         initialValue = 0f,
-        targetValue = -40f,
+        targetValue = -60f, // Increased range
         animationSpec = infiniteRepeatable(
-            animation = tween(5000, easing = EaseInOutSine),
+            animation = tween(3000, easing = EaseInOutSine), // Faster
             repeatMode = RepeatMode.Reverse
         ),
         label = "orb2"
     )
 
-    // Subtle breathing animation for logo
-    val logoScale by infiniteTransition.animateFloat(
-        initialValue = 0.98f,
-        targetValue = 1.02f,
+    // Add rotation to orbs for more dynamism
+    val orb1Rotation by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 360f,
         animationSpec = infiniteRepeatable(
-            animation = tween(3000, easing = EaseInOutCubic),
+            animation = tween(20000, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "orb1_rotation"
+    )
+
+    val orb2Rotation by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = -360f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(25000, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "orb2_rotation"
+    )
+
+    // More dynamic breathing animation for logo with rotation
+    val logoScale by infiniteTransition.animateFloat(
+        initialValue = 0.95f,
+        targetValue = 1.05f, // More pronounced
+        animationSpec = infiniteRepeatable(
+            animation = tween(2000, easing = EaseInOutCubic), // Faster
             repeatMode = RepeatMode.Reverse
         ),
         label = "logo_breathing"
+    )
+
+    val logoRotation by infiniteTransition.animateFloat(
+        initialValue = -2f,
+        targetValue = 2f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(3000, easing = EaseInOutSine),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "logo_rotation"
     )
 
     Box(
@@ -96,14 +130,20 @@ fun WelcomeScreen(backStack: SnapshotStateList<AllScreens>) {
                 )
             )
     ) {
-        // Floating decorative orbs (background elements)
+        // Floating decorative orbs (background elements) with rotation
         Box(
             modifier = Modifier
                 .offset(x = 60.dp, y = (120 + orb1Offset).dp)
                 .size(180.dp)
+                .rotate(orb1Rotation)
                 .blur(80.dp)
                 .background(
-                    Color(0xFFFFB8B0).copy(alpha = 0.3f),
+                    Brush.radialGradient(
+                        colors = listOf(
+                            Color(0xFFFFB8B0).copy(alpha = 0.4f),
+                            Color(0xFFFF8A7E).copy(alpha = 0.2f)
+                        )
+                    ),
                     CircleShape
                 )
         )
@@ -113,16 +153,36 @@ fun WelcomeScreen(backStack: SnapshotStateList<AllScreens>) {
                 .align(Alignment.BottomEnd)
                 .offset(x = (-30).dp, y = (orb2Offset - 100).dp)
                 .size(220.dp)
+                .rotate(orb2Rotation)
                 .blur(90.dp)
                 .background(
-                    Color(0xFFFF8A7E).copy(alpha = 0.25f),
+                    Brush.radialGradient(
+                        colors = listOf(
+                            Color(0xFFFF8A7E).copy(alpha = 0.35f),
+                            Color(0xFFFF6B5F).copy(alpha = 0.15f)
+                        )
+                    ),
                     CircleShape
                 )
         )
 
         AnimatedVisibility(
             visible = contentVisible,
-            enter = fadeIn(animationSpec = tween(800, easing = EaseOutCubic)),
+            enter = fadeIn(animationSpec = tween(600, easing = EaseOutCubic)) +
+                    scaleIn(
+                        initialScale = 0.9f,
+                        animationSpec = spring(
+                            dampingRatio = Spring.DampingRatioMediumBouncy,
+                            stiffness = Spring.StiffnessMedium
+                        )
+                    ) +
+                    slideInVertically(
+                        initialOffsetY = { it / 10 },
+                        animationSpec = spring(
+                            dampingRatio = Spring.DampingRatioMediumBouncy,
+                            stiffness = Spring.StiffnessMedium
+                        )
+                    ),
             modifier = Modifier.fillMaxSize()
         ) {
             Column(
@@ -154,10 +214,11 @@ fun WelcomeScreen(backStack: SnapshotStateList<AllScreens>) {
                             )
                     )
 
-                    // Main logo container with glassmorphism
+                    // Main logo container with glassmorphism and dynamic animations
                     Box(
                         modifier = Modifier
                             .scale(logoScale)
+                            .rotate(logoRotation)
                             .size(160.dp)
                             .clip(CircleShape)
                             .background(
@@ -182,7 +243,8 @@ fun WelcomeScreen(backStack: SnapshotStateList<AllScreens>) {
                     ) {
                         Text(
                             text = "🩸",
-                            fontSize = 72.sp
+                            fontSize = 72.sp,
+                            modifier = Modifier.rotate(-logoRotation) // Counter-rotate emoji to keep it upright
                         )
                     }
                 }
@@ -334,38 +396,53 @@ fun UltraModernLanguageButton(
     val interactionSource = remember { MutableInteractionSource() }
 
     val scale by animateFloatAsState(
-        targetValue = if (isPressed) 0.96f else 1f,
+        targetValue = if (isPressed) 0.94f else 1f, // More pronounced scale
         animationSpec = spring(
-            dampingRatio = Spring.DampingRatioMediumBouncy,
+            dampingRatio = Spring.DampingRatioLowBouncy, // More bouncy!
             stiffness = Spring.StiffnessHigh
         ),
         label = "button_scale"
     )
 
-    Box(
+    val elevation by animateDpAsState(
+        targetValue = if (isPressed) 0.dp else 8.dp,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessHigh
+        ),
+        label = "button_elevation"
+    )
+
+    Surface(
         modifier = Modifier
             .fillMaxWidth()
             .scale(scale)
-            .height(64.dp)
-            .clip(RoundedCornerShape(14.dp))
-            .background(backgroundColor)
-            .clickable(
-                interactionSource = interactionSource,
-                indication = null,
-                onClick = {
-                    isPressed = true
-                    onClick()
-                }
-            ),
-        contentAlignment = Alignment.Center
+            .height(64.dp),
+        shape = RoundedCornerShape(14.dp),
+        shadowElevation = elevation,
+        color = backgroundColor
     ) {
-        Text(
-            text = primaryText,
-            fontSize = 16.sp,
-            fontWeight = FontWeight.SemiBold,
-            fontFamily = Fonts.ManropeFamily,
-            color = Color.White,
-            letterSpacing = 0.sp
-        )
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .clickable(
+                    interactionSource = interactionSource,
+                    indication = null,
+                    onClick = {
+                        isPressed = true
+                        onClick()
+                    }
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = primaryText,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.SemiBold,
+                fontFamily = Fonts.ManropeFamily,
+                color = Color.White,
+                letterSpacing = 0.sp
+            )
+        }
     }
 }

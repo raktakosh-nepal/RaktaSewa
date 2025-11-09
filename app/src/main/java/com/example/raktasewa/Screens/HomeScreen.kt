@@ -55,27 +55,27 @@ fun HomeScreen(
 ) {
     val data = listOf("A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-")
 
-    // Animation states
+    // Animation states - faster timing!
     var topSectionVisible by remember { mutableStateOf(false) }
     var bottomSheetVisible by remember { mutableStateOf(false) }
     var bloodTypesVisible by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
-        delay(100)
+        delay(50) // Faster
         topSectionVisible = true
-        delay(400)
+        delay(250) // Reduced delay
         bottomSheetVisible = true
-        delay(600)
+        delay(350) // Reduced delay
         bloodTypesVisible = true
     }
 
-    // Floating animation for decorative elements
+    // More dynamic floating animation for decorative elements
     val infiniteTransition = rememberInfiniteTransition(label = "")
     val floatOffset by infiniteTransition.animateFloat(
         initialValue = 0f,
-        targetValue = 20f,
+        targetValue = 30f, // Increased range
         animationSpec = infiniteRepeatable(
-            animation = tween(3000, easing = EaseInOutSine),
+            animation = tween(2000, easing = EaseInOutSine), // Faster
             repeatMode = RepeatMode.Reverse
         ),
         label = ""
@@ -124,13 +124,21 @@ fun HomeScreen(
 
             AnimatedVisibility(
                 visible = topSectionVisible,
-                enter = fadeIn(tween(800)) + slideInVertically(
-                    initialOffsetY = { -100 },
-                    animationSpec = spring(
-                        dampingRatio = Spring.DampingRatioMediumBouncy,
-                        stiffness = Spring.StiffnessMedium
-                    )
-                )
+                enter = fadeIn(tween(500)) +
+                        slideInVertically(
+                            initialOffsetY = { -150 },
+                            animationSpec = spring(
+                                dampingRatio = Spring.DampingRatioLowBouncy, // More bounce!
+                                stiffness = Spring.StiffnessMediumLow
+                            )
+                        ) +
+                        scaleIn(
+                            initialScale = 0.9f,
+                            animationSpec = spring(
+                                dampingRatio = Spring.DampingRatioLowBouncy,
+                                stiffness = Spring.StiffnessMedium
+                            )
+                        )
             ) {
                 Column(
                     modifier = Modifier
@@ -236,10 +244,18 @@ fun HomeScreen(
                 enter = slideInVertically(
                     initialOffsetY = { it },
                     animationSpec = spring(
-                        dampingRatio = Spring.DampingRatioMediumBouncy,
-                        stiffness = Spring.StiffnessMedium
+                        dampingRatio = Spring.DampingRatioLowBouncy, // More bouncy!
+                        stiffness = Spring.StiffnessMediumLow
                     )
-                ) + fadeIn(tween(800))
+                ) +
+                        fadeIn(tween(500)) +
+                        scaleIn(
+                            initialScale = 0.95f,
+                            animationSpec = spring(
+                                dampingRatio = Spring.DampingRatioLowBouncy,
+                                stiffness = Spring.StiffnessMedium
+                            )
+                        )
             ) {
                 Surface(
                     modifier = Modifier
@@ -340,18 +356,25 @@ fun HomeScreen(
 
                                 LaunchedEffect(bloodTypesVisible) {
                                     if (bloodTypesVisible) {
-                                        delay(index * 80L)
+                                        delay(index * 60L) // Faster staggering
                                         itemVisible = true
                                     }
                                 }
 
                                 AnimatedVisibility(
                                     visible = itemVisible,
-                                    enter = fadeIn(tween(500)) +
+                                    enter = fadeIn(tween(400)) +
                                             scaleIn(
-                                                initialScale = 0.8f,
+                                                initialScale = 0.7f, // More dramatic
                                                 animationSpec = spring(
-                                                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                                                    dampingRatio = Spring.DampingRatioLowBouncy, // More bouncy!
+                                                    stiffness = Spring.StiffnessMedium
+                                                )
+                                            ) +
+                                            slideInVertically(
+                                                initialOffsetY = { it / 4 },
+                                                animationSpec = spring(
+                                                    dampingRatio = Spring.DampingRatioLowBouncy,
                                                     stiffness = Spring.StiffnessMedium
                                                 )
                                             )
@@ -367,16 +390,24 @@ fun HomeScreen(
 
                         Spacer(modifier = Modifier.height(24.dp))
 
-                        // Search Button with animation
+                        // Search Button with more energetic animation
                         AnimatedVisibility(
                             visible = viewModel.selectedBloodGroup != null,
-                            enter = fadeIn(tween(400)) + scaleIn(
-                                initialScale = 0.9f,
-                                animationSpec = spring(
-                                    dampingRatio = Spring.DampingRatioLowBouncy,
-                                    stiffness = Spring.StiffnessMedium
-                                )
-                            )
+                            enter = fadeIn(tween(300)) +
+                                    scaleIn(
+                                        initialScale = 0.7f, // More dramatic entrance
+                                        animationSpec = spring(
+                                            dampingRatio = Spring.DampingRatioLowBouncy,
+                                            stiffness = Spring.StiffnessMedium
+                                        )
+                                    ) +
+                                    slideInVertically(
+                                        initialOffsetY = { it / 3 },
+                                        animationSpec = spring(
+                                            dampingRatio = Spring.DampingRatioLowBouncy,
+                                            stiffness = Spring.StiffnessMedium
+                                        )
+                                    )
                         ) {
                             Column(
                                 horizontalAlignment = Alignment.CenterHorizontally
@@ -451,17 +482,20 @@ fun EnhancedBloodTypeCard(
     onClick: () -> Unit
 ) {
     val scale by animateFloatAsState(
-        targetValue = if (isSelected) 1.0f else 0.96f,
+        targetValue = if (isSelected) 1.05f else 1.0f, // More pronounced
         animationSpec = spring(
-            dampingRatio = Spring.DampingRatioMediumBouncy,
+            dampingRatio = Spring.DampingRatioLowBouncy, // More bouncy!
             stiffness = Spring.StiffnessMedium
         ),
         label = ""
     )
 
     val elevation by animateDpAsState(
-        targetValue = if (isSelected) 12.dp else 4.dp,
-        animationSpec = tween(300),
+        targetValue = if (isSelected) 16.dp else 4.dp, // Higher elevation
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessMedium
+        ),
         label = ""
     )
 
@@ -532,7 +566,16 @@ fun PremiumSearchButton(
     var isPressed by remember { mutableStateOf(false) }
 
     val scale by animateFloatAsState(
-        targetValue = if (isPressed) 0.96f else 1f,
+        targetValue = if (isPressed) 0.92f else 1f, // More dramatic press
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioLowBouncy, // More bouncy!
+            stiffness = Spring.StiffnessHigh
+        ),
+        label = ""
+    )
+
+    val elevation by animateDpAsState(
+        targetValue = if (isPressed) 4.dp else 16.dp,
         animationSpec = spring(
             dampingRatio = Spring.DampingRatioMediumBouncy,
             stiffness = Spring.StiffnessHigh
@@ -550,7 +593,7 @@ fun PremiumSearchButton(
             .height(68.dp)
             .scale(scale)
             .shadow(
-                elevation = 16.dp,
+                elevation = elevation,
                 shape = RoundedCornerShape(20.dp),
                 spotColor = Color(0xFFE85A50).copy(alpha = 0.5f)
             ),
