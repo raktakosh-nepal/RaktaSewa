@@ -538,10 +538,11 @@ fun BloodDropWithOrbits(bloodType: String) {
 
             // Energy waves expanding from center
             val waveAlpha1 = (1f - waveRadius / 150f) * 0.6f
+            val safeWaveRadius1 = waveRadius.coerceAtLeast(0.1f)
             if (waveAlpha1 > 0) {
                 drawCircle(
                     color = Color(0xFFFF6B6B).copy(alpha = waveAlpha1),
-                    radius = waveRadius,
+                    radius = safeWaveRadius1,
                     center = androidx.compose.ui.geometry.Offset(centerX, centerY),
                     style = Stroke(width = 3f)
                 )
@@ -554,19 +555,20 @@ fun BloodDropWithOrbits(bloodType: String) {
                             Color.Transparent
                         ),
                         center = androidx.compose.ui.geometry.Offset(centerX, centerY),
-                        radius = waveRadius
+                        radius = safeWaveRadius1
                     ),
                     center = androidx.compose.ui.geometry.Offset(centerX, centerY),
-                    radius = waveRadius
+                    radius = safeWaveRadius1
                 )
             }
 
             // Secondary energy wave
             val waveAlpha2 = (1f - waveRadius2 / 150f) * 0.5f
+            val safeWaveRadius2 = waveRadius2.coerceAtLeast(0.1f)
             if (waveAlpha2 > 0) {
                 drawCircle(
                     color = Color(0xFFFF8787).copy(alpha = waveAlpha2),
-                    radius = waveRadius2,
+                    radius = safeWaveRadius2,
                     center = androidx.compose.ui.geometry.Offset(centerX, centerY),
                     style = Stroke(width = 2f)
                 )
