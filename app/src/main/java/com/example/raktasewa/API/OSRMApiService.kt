@@ -22,7 +22,8 @@ data class OSRMGeometry(
 
 interface OSRMApiService {
     // OSRM Demo Server - Free to use
-    @GET("route/v1/driving/{coordinates}")
+    // geometries=geojson returns coordinates as array instead of encoded polyline
+    @GET("route/v1/driving/{coordinates}?geometries=geojson&overview=full")
     suspend fun getRoute(
         @Path("coordinates") coordinates: String // format: "lon1,lat1;lon2,lat2"
     ): Response<OSRMResponse>
