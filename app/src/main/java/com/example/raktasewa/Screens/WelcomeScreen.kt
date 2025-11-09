@@ -4,7 +4,11 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.*
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInVertically
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -14,8 +18,9 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.blur
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -34,44 +39,48 @@ fun WelcomeScreen(backStack: SnapshotStateList<AllScreens>) {
     val languagePreference = LanguagePreference(context)
 
     // Animation states with staggered timing
-    var logoVisible by remember { mutableStateOf(false) }
-    var namasteyVisible by remember { mutableStateOf(false) }
-    var cardVisible by remember { mutableStateOf(false) }
-    var brandingVisible by remember { mutableStateOf(false) }
+    var contentVisible by remember { mutableStateOf(false) }
 
     // Trigger animations in sequence
     LaunchedEffect(Unit) {
-        delay(150)
-        logoVisible = true
-        delay(600)
-        namasteyVisible = true
-        delay(400)
-        cardVisible = true
-        delay(300)
-        brandingVisible = true
+        delay(200)
+        contentVisible = true
     }
 
-    // Infinite pulsing animation for logo
-    val infiniteTransition = rememberInfiniteTransition(label = "")
-    val logoScale by infiniteTransition.animateFloat(
-        initialValue = 0.96f,
-        targetValue = 1.04f,
+    // Infinite animations for floating elements
+    val infiniteTransition = rememberInfiniteTransition(label = "background_animation")
+
+    // Floating orb 1 animation
+    val orb1Offset by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 30f,
         animationSpec = infiniteRepeatable(
-            animation = tween(2000, easing = EaseInOutCubic),
+            animation = tween(4000, easing = EaseInOutSine),
             repeatMode = RepeatMode.Reverse
         ),
-        label = ""
+        label = "orb1"
     )
 
-    // Glowing effect
-    val glowAlpha by infiniteTransition.animateFloat(
-        initialValue = 0.2f,
-        targetValue = 0.5f,
+    // Floating orb 2 animation
+    val orb2Offset by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = -40f,
         animationSpec = infiniteRepeatable(
-            animation = tween(2500, easing = EaseInOutCubic),
+            animation = tween(5000, easing = EaseInOutSine),
             repeatMode = RepeatMode.Reverse
         ),
-        label = ""
+        label = "orb2"
+    )
+
+    // Subtle breathing animation for logo
+    val logoScale by infiniteTransition.animateFloat(
+        initialValue = 0.98f,
+        targetValue = 1.02f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(3000, easing = EaseInOutCubic),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "logo_breathing"
     )
 
     Box(
@@ -80,169 +89,194 @@ fun WelcomeScreen(backStack: SnapshotStateList<AllScreens>) {
             .background(
                 Brush.verticalGradient(
                     colors = listOf(
-                        Color.White,
-                        Color(0xFFFFF9F7),
-                        Color.White
+                        Color(0xFFFFF5F3),
+                        Color(0xFFFFFFFF),
+                        Color(0xFFFFF9F7)
                     )
                 )
             )
     ) {
-        Column(
+        // Floating decorative orbs (background elements)
+        Box(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Spacer(modifier = Modifier.height(80.dp))
+                .offset(x = 60.dp, y = (120 + orb1Offset).dp)
+                .size(180.dp)
+                .blur(80.dp)
+                .background(
+                    Color(0xFFFFB8B0).copy(alpha = 0.3f),
+                    CircleShape
+                )
+        )
 
-            // Animated Logo Section
-            AnimatedVisibility(
-                visible = logoVisible,
-                enter = fadeIn(animationSpec = tween(1000, easing = EaseOutCubic)) +
-                        slideInVertically(
-                            initialOffsetY = { -150 },
-                            animationSpec = spring(
-                                dampingRatio = Spring.DampingRatioMediumBouncy,
-                                stiffness = Spring.StiffnessMedium
-                            )
-                        )
+        Box(
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .offset(x = (-30).dp, y = (orb2Offset - 100).dp)
+                .size(220.dp)
+                .blur(90.dp)
+                .background(
+                    Color(0xFFFF8A7E).copy(alpha = 0.25f),
+                    CircleShape
+                )
+        )
+
+        AnimatedVisibility(
+            visible = contentVisible,
+            enter = fadeIn(animationSpec = tween(800, easing = EaseOutCubic)),
+            modifier = Modifier.fillMaxSize()
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 28.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                Spacer(modifier = Modifier.height(100.dp))
+
+                // Modern Logo with glassmorphism effect
                 Box(
                     contentAlignment = Alignment.Center,
-                    modifier = Modifier.padding(vertical = 20.dp)
+                    modifier = Modifier.padding(vertical = 24.dp)
                 ) {
-                    // Outer glow effect
-                    Surface(
+                    // Soft glow background
+                    Box(
                         modifier = Modifier
-                            .size(190.dp)
-                            .alpha(glowAlpha),
-                        shape = CircleShape,
-                        color = Color(0xFFFFD4CD)
-                    ) {}
+                            .size(200.dp)
+                            .blur(50.dp)
+                            .background(
+                                Brush.radialGradient(
+                                    colors = listOf(
+                                        Color(0xFFFF8A7E).copy(alpha = 0.4f),
+                                        Color.Transparent
+                                    )
+                                ),
+                                CircleShape
+                            )
+                    )
 
-                    // Main logo with shadow
-                    Surface(
+                    // Main logo container with glassmorphism
+                    Box(
                         modifier = Modifier
                             .scale(logoScale)
                             .size(160.dp)
-                            .shadow(
-                                elevation = 20.dp,
-                                shape = CircleShape,
-                                spotColor = Color(0xFFFF8A7E).copy(alpha = 0.5f)
-                            ),
-                        shape = CircleShape,
-                        color = Color.Transparent
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .background(
-                                    Brush.radialGradient(
-                                        colors = listOf(
-                                            Color(0xFFFF9B8E),
-                                            Color(0xFFE85A50),
-                                            Color(0xFFD84639)
-                                        )
+                            .clip(CircleShape)
+                            .background(
+                                Brush.linearGradient(
+                                    colors = listOf(
+                                        Color(0xFFFF6B5F),
+                                        Color(0xFFE74C3C)
+                                    )
+                                )
+                            )
+                            .border(
+                                width = 3.dp,
+                                brush = Brush.linearGradient(
+                                    colors = listOf(
+                                        Color.White.copy(alpha = 0.5f),
+                                        Color.White.copy(alpha = 0.1f)
                                     )
                                 ),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = "🩸",
-                                fontSize = 80.sp
-                            )
-                        }
+                                shape = CircleShape
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "🩸",
+                            fontSize = 72.sp
+                        )
                     }
                 }
-            }
 
-            Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
-            // Animated "Namaste" text
-            AnimatedVisibility(
-                visible = namasteyVisible,
-                enter = fadeIn(animationSpec = tween(800)) +
-                        slideInVertically(
-                            initialOffsetY = { 80 },
-                            animationSpec = spring(
-                                dampingRatio = Spring.DampingRatioLowBouncy,
-                                stiffness = Spring.StiffnessLow
-                            )
-                        )
-            ) {
-                Text(
-                    text = "नमस्ते",
-                    fontSize = 42.sp,
-                    fontWeight = FontWeight.ExtraBold,
-                    fontFamily = Fonts.ManropeFamily,
-                    color = Color(0xFFE85A50),
-                    letterSpacing = (-0.5).sp
-                )
-            }
+                // Modern heading with gradient text effect
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "रक्तसेवा",
+                        fontSize = 48.sp,
+                        fontWeight = FontWeight.Black,
+                        fontFamily = Fonts.ManropeFamily,
+                        color = Color(0xFF1A1A1A),
+                        letterSpacing = (-1.5).sp
+                    )
 
-            Spacer(modifier = Modifier.weight(1f))
+                    Spacer(modifier = Modifier.height(4.dp))
 
-            // Animated Language Selection Card
-            AnimatedVisibility(
-                visible = cardVisible,
-                enter = fadeIn(animationSpec = tween(1000)) +
-                        slideInVertically(
-                            initialOffsetY = { 150 },
-                            animationSpec = spring(
-                                dampingRatio = Spring.DampingRatioMediumBouncy,
-                                stiffness = Spring.StiffnessMedium
-                            )
-                        )
-            ) {
-                Card(
+                    Text(
+                        text = "Blood Service",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Medium,
+                        fontFamily = Fonts.ManropeFamily,
+                        color = Color(0xFF666666),
+                        letterSpacing = 2.sp
+                    )
+                }
+
+                Spacer(modifier = Modifier.weight(1f))
+
+                // Glassmorphic Language Selection Card
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .shadow(
-                            elevation = 12.dp,
-                            shape = RoundedCornerShape(28.dp),
-                            spotColor = Color(0xFFE85A50).copy(alpha = 0.15f)
-                        ),
-                    shape = RoundedCornerShape(28.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = Color(0xFFFFFBF9)
-                    )
+                        .clip(RoundedCornerShape(32.dp))
+                        .background(
+                            Brush.verticalGradient(
+                                colors = listOf(
+                                    Color.White.copy(alpha = 0.9f),
+                                    Color.White.copy(alpha = 0.7f)
+                                )
+                            )
+                        )
+                        .border(
+                            width = 1.5.dp,
+                            brush = Brush.verticalGradient(
+                                colors = listOf(
+                                    Color.White.copy(alpha = 0.8f),
+                                    Color.White.copy(alpha = 0.3f)
+                                )
+                            ),
+                            shape = RoundedCornerShape(32.dp)
+                        )
                 ) {
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 32.dp, vertical = 40.dp),
+                            .padding(horizontal = 28.dp, vertical = 44.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            text = "स्वागतम्",
-                            fontSize = 34.sp,
+                            text = "Choose Your Language",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            fontFamily = Fonts.ManropeFamily,
+                            color = Color(0xFF888888),
+                            textAlign = TextAlign.Center,
+                            letterSpacing = 1.2.sp
+                        )
+
+                        Spacer(modifier = Modifier.height(6.dp))
+
+                        Text(
+                            text = "भाषा छान्नुहोस्",
+                            fontSize = 28.sp,
                             fontWeight = FontWeight.Bold,
                             fontFamily = Fonts.ManropeFamily,
-                            color = Color(0xFF2E2E2E),
+                            color = Color(0xFF1A1A1A),
                             textAlign = TextAlign.Center,
                             letterSpacing = (-0.5).sp
                         )
 
-                        Spacer(modifier = Modifier.height(8.dp))
+                        Spacer(modifier = Modifier.height(36.dp))
 
-                        Text(
-                            text = "भाषा चयन गर्नुहोस्",
-                            fontSize = 14.sp,
-                            fontFamily = Fonts.ManropeFamily,
-                            color = Color(0xFF999999),
-                            fontWeight = FontWeight.Medium,
-                            textAlign = TextAlign.Center,
-                            letterSpacing = 0.5.sp
-                        )
-
-                        Spacer(modifier = Modifier.height(32.dp))
-
-                        // Nepali Button
-                        ModernLanguageButton(
-                            text = "नेपाली",
+                        // Nepali Language Option
+                        UltraModernLanguageButton(
+                            primaryText = "नेपाली",
+                            secondaryText = "Nepali",
                             flag = "🇳🇵",
-                            backgroundColor = Color(0xFFE85A50),
-                            shadowColor = Color(0xFFE85A50).copy(alpha = 0.3f)
+                            accentColor = Color(0xFFE74C3C),
+                            isSelected = false
                         ) {
                             languagePreference.saveLanguage(LanguagePreference.LANGUAGE_NEPALI)
                             backStack.removeLastOrNull()
@@ -251,12 +285,13 @@ fun WelcomeScreen(backStack: SnapshotStateList<AllScreens>) {
 
                         Spacer(modifier = Modifier.height(16.dp))
 
-                        // English Button
-                        ModernLanguageButton(
-                            text = "English",
+                        // English Language Option
+                        UltraModernLanguageButton(
+                            primaryText = "English",
+                            secondaryText = "अंग्रेजी",
                             flag = "🇺🇸",
-                            backgroundColor = Color(0xFF2C3E50),
-                            shadowColor = Color(0xFF2C3E50).copy(alpha = 0.3f)
+                            accentColor = Color(0xFF3498DB),
+                            isSelected = false
                         ) {
                             languagePreference.saveLanguage(LanguagePreference.LANGUAGE_ENGLISH)
                             backStack.removeLastOrNull()
@@ -264,112 +299,135 @@ fun WelcomeScreen(backStack: SnapshotStateList<AllScreens>) {
                         }
                     }
                 }
+
+                Spacer(modifier = Modifier.height(48.dp))
             }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Animated Bottom Branding
-            AnimatedVisibility(
-                visible = brandingVisible,
-                enter = fadeIn(animationSpec = tween(1000))
-            ) {
-                Row(
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "रक्तसेवा",
-                        fontSize = 13.sp,
-                        fontFamily = Fonts.ManropeFamily,
-                        color = Color(0xFFAAAAAA),
-                        fontWeight = FontWeight.Medium
-                    )
-                    Text(
-                        text = " • ",
-                        fontSize = 13.sp,
-                        color = Color(0xFFAAAAAA)
-                    )
-                    Text(
-                        text = "Blood Service",
-                        fontSize = 13.sp,
-                        fontFamily = Fonts.ManropeFamily,
-                        color = Color(0xFFAAAAAA),
-                        fontWeight = FontWeight.Medium
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(32.dp))
         }
     }
 }
 
 @Composable
-fun ModernLanguageButton(
-    text: String,
+fun UltraModernLanguageButton(
+    primaryText: String,
+    secondaryText: String,
     flag: String,
-    backgroundColor: Color,
-    shadowColor: Color,
+    accentColor: Color,
+    isSelected: Boolean,
     onClick: () -> Unit
 ) {
     var isPressed by remember { mutableStateOf(false) }
+    val interactionSource = remember { MutableInteractionSource() }
 
     val scale by animateFloatAsState(
-        targetValue = if (isPressed) 0.95f else 1f,
+        targetValue = if (isPressed) 0.96f else 1f,
         animationSpec = spring(
             dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = Spring.StiffnessMedium
+            stiffness = Spring.StiffnessHigh
         ),
-        label = ""
+        label = "button_scale"
     )
 
-    val elevation by animateDpAsState(
-        targetValue = if (isPressed) 4.dp else 8.dp,
+    val borderAlpha by animateFloatAsState(
+        targetValue = if (isPressed) 0.3f else 0.6f,
         animationSpec = tween(200),
-        label = ""
+        label = "border_alpha"
     )
 
-    Button(
-        onClick = {
-            isPressed = true
-            onClick()
-        },
+    Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(66.dp)
             .scale(scale)
-            .shadow(
-                elevation = elevation,
-                shape = RoundedCornerShape(16.dp),
-                spotColor = shadowColor
+            .height(76.dp)
+            .clip(RoundedCornerShape(20.dp))
+            .background(
+                Brush.horizontalGradient(
+                    colors = listOf(
+                        Color.White.copy(alpha = 0.95f),
+                        Color.White.copy(alpha = 0.85f)
+                    )
+                )
+            )
+            .border(
+                width = 2.dp,
+                brush = Brush.horizontalGradient(
+                    colors = listOf(
+                        accentColor.copy(alpha = borderAlpha),
+                        accentColor.copy(alpha = borderAlpha * 0.5f)
+                    )
+                ),
+                shape = RoundedCornerShape(20.dp)
+            )
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                onClick = {
+                    isPressed = true
+                    onClick()
+                }
             ),
-        shape = RoundedCornerShape(16.dp),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = backgroundColor
-        ),
-        contentPadding = PaddingValues(horizontal = 24.dp),
-        elevation = ButtonDefaults.buttonElevation(
-            defaultElevation = 0.dp
-        )
+        contentAlignment = Alignment.Center
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(
-                text = flag,
-                fontSize = 26.sp
-            )
-            Spacer(modifier = Modifier.width(16.dp))
-            Text(
-                text = text,
-                fontSize = 19.sp,
-                fontWeight = FontWeight.Bold,
-                fontFamily = Fonts.ManropeFamily,
-                color = Color.White,
-                letterSpacing = 0.3.sp
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Flag with subtle background
+                Box(
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(CircleShape)
+                        .background(accentColor.copy(alpha = 0.1f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = flag,
+                        fontSize = 28.sp
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(16.dp))
+
+                Column {
+                    Text(
+                        text = primaryText,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = Fonts.ManropeFamily,
+                        color = Color(0xFF1A1A1A),
+                        letterSpacing = (-0.3).sp
+                    )
+                    Text(
+                        text = secondaryText,
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Medium,
+                        fontFamily = Fonts.ManropeFamily,
+                        color = Color(0xFF888888),
+                        letterSpacing = 0.2.sp
+                    )
+                }
+            }
+
+            // Arrow indicator
+            Box(
+                modifier = Modifier
+                    .size(36.dp)
+                    .clip(CircleShape)
+                    .background(accentColor.copy(alpha = 0.15f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "→",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = accentColor
+                )
+            }
         }
     }
 }
