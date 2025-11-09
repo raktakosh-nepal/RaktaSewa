@@ -146,20 +146,10 @@ fun HomeScreen(
                         .padding(top = 56.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    // Animated Logo with glow
+                    // Animated Logo
                     Box(
                         contentAlignment = Alignment.Center
                     ) {
-                        // Glow effect
-                        Surface(
-                            modifier = Modifier
-                                .size(100.dp)
-                                .alpha(0.3f)
-                                .blur(20.dp),
-                            shape = CircleShape,
-                            color = Color.White
-                        ) {}
-
                         Surface(
                             modifier = Modifier.size(80.dp),
                             shape = CircleShape,
@@ -237,7 +227,7 @@ fun HomeScreen(
             modifier = Modifier
                 .fillMaxSize()
         ) {
-            Spacer(modifier = Modifier.height(290.dp))
+            Spacer(modifier = Modifier.height(320.dp))
 
             AnimatedVisibility(
                 visible = bottomSheetVisible,
@@ -312,33 +302,17 @@ fun HomeScreen(
 
                             Spacer(modifier = Modifier.width(16.dp))
 
-                            Column {
-                                Text(
-                                    text = if (language == "Nep")
-                                        "रक्त बैंक खोज्नुहोस्"
-                                    else
-                                        "Find Blood Banks Near You",
-                                    fontSize = 20.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    fontFamily = Fonts.ManropeFamily,
-                                    color = Color(0xFF2C3E50),
-                                    letterSpacing = (-0.2).sp
-                                )
-
-                                Spacer(modifier = Modifier.height(6.dp))
-
-                                Text(
-                                    text = if (language == "Nep")
-                                        "रक्त समूह चयन गर्नुहोस्"
-                                    else
-                                        "Select your required blood group to get started",
-                                    fontSize = 12.sp,
-                                    fontFamily = Fonts.ManropeFamily,
-                                    color = Color(0xFF999999),
-                                    fontWeight = FontWeight.Normal,
-                                    letterSpacing = 0.sp
-                                )
-                            }
+                            Text(
+                                text = if (language == "Nep")
+                                    "रक्त समूह चयन गर्नुहोस्"
+                                else
+                                    "Select your required blood group",
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold,
+                                fontFamily = Fonts.ManropeFamily,
+                                color = Color(0xFF2C3E50),
+                                letterSpacing = (-0.2).sp
+                            )
                         }
 
                         Spacer(modifier = Modifier.height(32.dp))
