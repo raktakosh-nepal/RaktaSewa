@@ -197,16 +197,6 @@ fun BloodBanksResultScreen(
                                 bloodBank = bloodBank,
                                 language = language,
                                 index = index,
-                                onCardClick = {
-                                    backStack.add(
-                                        AllScreens.BloodBankDetailScreen(
-                                            bloodBank = bloodBank,
-                                            userLatitude = userLatitude,
-                                            userLongitude = userLongitude,
-                                            language = language
-                                        )
-                                    )
-                                },
                                 onCallClick = {
                                     val intent = Intent(Intent.ACTION_DIAL).apply {
                                         data = Uri.parse("tel:${bloodBank.contact}")
@@ -227,7 +217,6 @@ fun BloodBankCard(
     bloodBank: BloodBank,
     language: String,
     index: Int,
-    onCardClick: () -> Unit,
     onCallClick: () -> Unit
 ) {
     Card(
@@ -237,8 +226,7 @@ fun BloodBankCard(
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(
             containerColor = Color.White
-        ),
-        onClick = onCardClick
+        )
     ) {
         Column(
             modifier = Modifier

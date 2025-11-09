@@ -67,9 +67,6 @@ dependencies {
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
     implementation("com.google.code.gson:gson:2.10.1")
 
-    // OpenStreetMap (osmdroid) - Free, no API key needed
-    implementation("org.osmdroid:osmdroid-android:6.1.18")
-
     // Coil for image loading
     implementation("io.coil-kt:coil-compose:2.5.0")
 

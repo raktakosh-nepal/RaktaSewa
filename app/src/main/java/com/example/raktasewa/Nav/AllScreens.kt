@@ -12,10 +12,4 @@ sealed class AllScreens {
         val userLongitude: Double,
         val language: String
     ): AllScreens()
-    data class BloodBankDetailScreen(
-        val bloodBank: BloodBank,
-        val userLatitude: Double,
-        val userLongitude: Double,
-        val language: String
-    ): AllScreens()
 }
