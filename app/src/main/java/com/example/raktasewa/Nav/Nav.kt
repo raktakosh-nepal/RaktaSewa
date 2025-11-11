@@ -1,6 +1,7 @@
 package com.example.raktasewa.Nav
 
-import LoadingScreen
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
@@ -11,8 +12,10 @@ import androidx.navigation3.ui.NavDisplay
 import com.example.raktasewa.Screens.BloodBankDetailScreen
 import com.example.raktasewa.Screens.BloodBanksResultScreen
 import com.example.raktasewa.Screens.HomeScreen
+import com.example.raktasewa.Screens.LoadingScreen
 import com.example.raktasewa.Screens.WelcomeScreen
 
+@RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
 @Composable
 fun Nav() {
     val backstack = remember { mutableStateListOf<AllScreens>(AllScreens.WelcomeScreen) }
@@ -34,7 +37,9 @@ fun Nav() {
                     BloodBanksResultScreen(backstack, key.bloodBanks, key.userLatitude, key.userLongitude, key.language)
                 }
                 is AllScreens.BloodBankDetailScreen -> NavEntry(key){
-                    BloodBankDetailScreen(backstack, key.bloodBank, key.userLatitude, key.userLongitude, key.language)
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
+                        BloodBankDetailScreen(backstack, key.bloodBank, key.userLatitude, key.userLongitude, key.language)
+                    }
                 }
             }
         }

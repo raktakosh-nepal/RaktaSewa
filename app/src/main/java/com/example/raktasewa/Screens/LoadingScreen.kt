@@ -1,8 +1,11 @@
+package com.example.raktasewa.Screens
+
 import android.Manifest
 import android.os.Looper
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -64,6 +67,10 @@ fun LoadingScreen(backStack: SnapshotStateList<AllScreens>, text: String, bloodT
     var longitude by remember { mutableDoubleStateOf(0.0) }
     val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
 
+    // Progress states
+    var currentStage by remember { mutableIntStateOf(1) }
+    var progressPercentage by remember { mutableFloatStateOf(0f) }
+
     val locationCallback = remember {
         object : LocationCallback() {
             override fun onLocationResult(p0: LocationResult) {
@@ -72,9 +79,19 @@ fun LoadingScreen(backStack: SnapshotStateList<AllScreens>, text: String, bloodT
                     longitude = location.longitude
                     fusedLocationClient.removeLocationUpdates(this)
 
+                    // Update to stage 2
+                    currentStage = 2
+                    progressPercentage = 0.33f
+
                     // Make API call to fetch blood banks
                     CoroutineScope(Dispatchers.IO).launch {
                         try {
+                            // Update to stage 3
+                            withContext(Dispatchers.Main) {
+                                currentStage = 3
+                                progressPercentage = 0.66f
+                            }
+
                             val response = RetrofitInstance.api.getBloodBanks(
                                 latitude = latitude,
                                 longitude = longitude,
@@ -82,6 +99,7 @@ fun LoadingScreen(backStack: SnapshotStateList<AllScreens>, text: String, bloodT
                             )
 
                             withContext(Dispatchers.Main) {
+                                progressPercentage = 1.0f
                                 if (response.isSuccessful && response.body() != null) {
                                     val bloodBanks = response.body()!!
                                     // Navigate to results screen
@@ -174,7 +192,7 @@ fun LoadingScreen(backStack: SnapshotStateList<AllScreens>, text: String, bloodT
                     modifier = Modifier.padding(28.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    // Progress dots indicator
+                    // Progress dots indicator - dynamic based on stage
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
                         modifier = Modifier.padding(bottom = 20.dp)
@@ -183,33 +201,86 @@ fun LoadingScreen(backStack: SnapshotStateList<AllScreens>, text: String, bloodT
                             modifier = Modifier
                                 .size(10.dp)
                                 .clip(androidx.compose.foundation.shape.CircleShape)
-                                .background(Color(0xFFDC3545))
+                                .background(if (currentStage >= 1) Color(0xFFDC3545) else Color(0xFFE0E0E0))
                         )
                         Box(
                             modifier = Modifier
                                 .size(10.dp)
                                 .clip(androidx.compose.foundation.shape.CircleShape)
-                                .background(Color(0xFFE0E0E0))
+                                .background(if (currentStage >= 2) Color(0xFFDC3545) else Color(0xFFE0E0E0))
                         )
                         Box(
                             modifier = Modifier
                                 .size(10.dp)
                                 .clip(androidx.compose.foundation.shape.CircleShape)
-                                .background(Color(0xFFE0E0E0))
+                                .background(if (currentStage >= 3) Color(0xFFDC3545) else Color(0xFFE0E0E0))
                         )
                     }
 
-                    Text(
-                        text = if (language == "Nep")
-                            "तपाईंको स्थान प्राप्त गर्दै..."
-                        else
-                            "Getting your location...",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        fontFamily = Fonts.ManropeFamily,
-                        color = Color(0xFF2C3E50),
-                        textAlign = TextAlign.Center
-                    )
+                    // Dynamic text based on current stage with smooth transitions
+                    AnimatedContent(
+                        targetState = currentStage,
+                        transitionSpec = {
+                            fadeIn(tween(300)) + slideInVertically { -20 } togetherWith
+                                    fadeOut(tween(300)) + slideOutVertically { 20 }
+                        },
+                        label = "stage_text"
+                    ) { stage ->
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = when (stage) {
+                                    1 -> if (language == "Nep")
+                                        "तपाईंको स्थान प्राप्त गर्दै..."
+                                    else
+                                        "Fetching your coordinates..."
+                                    2 -> if (language == "Nep")
+                                        "रक्त बैंकहरूमा अनुरोध पठाउँदै..."
+                                    else
+                                        "Sending request to blood banks..."
+                                    3 -> if (language == "Nep")
+                                        "परिणामहरू प्रशोधन गर्दै..."
+                                    else
+                                        "Processing results..."
+                                    else -> if (language == "Nep")
+                                        "तपाईंको स्थान प्राप्त गर्दै..."
+                                    else
+                                        "Fetching your coordinates..."
+                                },
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                fontFamily = Fonts.ManropeFamily,
+                                color = Color(0xFF2C3E50),
+                                textAlign = TextAlign.Center
+                            )
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            Text(
+                                text = when (stage) {
+                                    1 -> if (language == "Nep")
+                                        "कृपया प्रतीक्षा गर्नुहोस्..."
+                                    else
+                                        "Please wait while we locate you..."
+                                    2 -> if (language == "Nep")
+                                        "नजिकैका रक्त बैंकहरू खोज्दै..."
+                                    else
+                                        "Searching nearby blood banks..."
+                                    3 -> if (language == "Nep")
+                                        "लगभग सकियो..."
+                                    else
+                                        "Almost done..."
+                                    else -> ""
+                                },
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Normal,
+                                fontFamily = Fonts.ManropeFamily,
+                                color = Color(0xFF888888),
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    }
 
                     Spacer(modifier = Modifier.height(8.dp))
 
@@ -225,10 +296,17 @@ fun LoadingScreen(backStack: SnapshotStateList<AllScreens>, text: String, bloodT
                         textAlign = TextAlign.Center
                     )
 
-                    Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(20.dp))
 
-                    // Progress bar
+                    // Progress bar - animated with actual progress
+                    val animatedProgress by animateFloatAsState(
+                        targetValue = progressPercentage,
+                        animationSpec = tween(durationMillis = 500, easing = EaseInOutCubic),
+                        label = "progress"
+                    )
+
                     LinearProgressIndicator(
+                        progress = { animatedProgress },
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(4.dp)
@@ -245,16 +323,16 @@ fun LoadingScreen(backStack: SnapshotStateList<AllScreens>, text: String, bloodT
                     ) {
                         Text(
                             text = if (language == "Nep")
-                                "चरण १ को ३"
+                                "चरण $currentStage को ३"
                             else
-                                "Step 1 of 3",
+                                "Step $currentStage of 3",
                             fontSize = 13.sp,
                             fontFamily = Fonts.ManropeFamily,
                             color = Color(0xFF888888),
                             fontWeight = FontWeight.Normal
                         )
                         Text(
-                            text = "0%",
+                            text = "${(progressPercentage * 100).toInt()}%",
                             fontSize = 13.sp,
                             fontFamily = Fonts.ManropeFamily,
                             color = Color(0xFFDC3545),

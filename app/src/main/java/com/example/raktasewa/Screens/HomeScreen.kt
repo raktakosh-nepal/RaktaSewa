@@ -13,6 +13,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.ui.platform.LocalDensity
+
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
@@ -31,6 +33,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -358,6 +361,7 @@ fun HomeScreen(
                         item { Spacer(modifier = Modifier.height(32.dp)) }
 
                         // Blood Group Grid with smooth, lively animation
+                        // Blood Group Grid with smooth, lively animation
                         items(data.chunked(2)) { rowItems ->
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
@@ -366,6 +370,7 @@ fun HomeScreen(
                                 rowItems.forEach { bloodGroup ->
                                     val index = data.indexOf(bloodGroup)
                                     var shouldAnimate by remember { mutableStateOf(false) }
+                                    val density = LocalDensity.current
 
                                     LaunchedEffect(bloodTypesVisible) {
                                         if (bloodTypesVisible) {
@@ -392,8 +397,8 @@ fun HomeScreen(
                                         label = "card_alpha_$index"
                                     )
 
-                                    val offsetY by animateDpAsState(
-                                        targetValue = if (shouldAnimate) 0.dp else 40.dp,
+                                    val offsetY by animateFloatAsState(
+                                        targetValue = if (shouldAnimate) 0f else with(density) { 40.dp.toPx() },
                                         animationSpec = spring(
                                             dampingRatio = Spring.DampingRatioLowBouncy,
                                             stiffness = Spring.StiffnessLow
@@ -408,7 +413,7 @@ fun HomeScreen(
                                                 scaleX = scale,
                                                 scaleY = scale,
                                                 alpha = alpha,
-                                                translationY = offsetY.toPx()
+                                                translationY = offsetY
                                             )
                                     ) {
                                         EnhancedBloodTypeCard(

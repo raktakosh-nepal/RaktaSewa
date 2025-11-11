@@ -1,12 +1,7 @@
 package com.example.raktasewa.Screens
 
-import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.*
 import androidx.compose.animation.core.*
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.slideInVertically
-import androidx.compose.material3.Surface
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -19,7 +14,6 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
@@ -41,80 +35,125 @@ fun WelcomeScreen(backStack: SnapshotStateList<AllScreens>) {
     val context = LocalContext.current
     val languagePreference = LanguagePreference(context)
 
-    // Animation states with staggered timing
     var contentVisible by remember { mutableStateOf(false) }
 
-    // Trigger animations in sequence
     LaunchedEffect(Unit) {
-        delay(100) // Faster start
+        delay(100)
         contentVisible = true
     }
 
-    // Infinite animations for floating elements
-    val infiniteTransition = rememberInfiniteTransition(label = "background_animation")
+    val infiniteTransition = rememberInfiniteTransition(label = "ambient")
 
-    // Floating orb 1 animation - more dynamic movement
-    val orb1Offset by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 50f, // Increased range
+    // Dynamic orb movements
+    val orb1X by infiniteTransition.animateFloat(
+        initialValue = -20f,
+        targetValue = 20f,
         animationSpec = infiniteRepeatable(
-            animation = tween(2500, easing = EaseInOutSine), // Faster
+            animation = tween(6000, easing = FastOutSlowInEasing),
             repeatMode = RepeatMode.Reverse
         ),
-        label = "orb1"
+        label = "orb1x"
     )
 
-    // Floating orb 2 animation - more dynamic movement
-    val orb2Offset by infiniteTransition.animateFloat(
+    val orb1Y by infiniteTransition.animateFloat(
         initialValue = 0f,
-        targetValue = -60f, // Increased range
+        targetValue = 40f,
         animationSpec = infiniteRepeatable(
-            animation = tween(3000, easing = EaseInOutSine), // Faster
+            animation = tween(5000, easing = FastOutSlowInEasing),
             repeatMode = RepeatMode.Reverse
         ),
-        label = "orb2"
+        label = "orb1y"
     )
 
-    // Add rotation to orbs for more dynamism
-    val orb1Rotation by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 360f,
+    val orb2X by infiniteTransition.animateFloat(
+        initialValue = 10f,
+        targetValue = -30f,
         animationSpec = infiniteRepeatable(
-            animation = tween(20000, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
+            animation = tween(7000, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
         ),
-        label = "orb1_rotation"
+        label = "orb2x"
     )
 
-    val orb2Rotation by infiniteTransition.animateFloat(
+    val orb2Y by infiniteTransition.animateFloat(
         initialValue = 0f,
-        targetValue = -360f,
+        targetValue = -35f,
         animationSpec = infiniteRepeatable(
-            animation = tween(25000, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
+            animation = tween(6500, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
         ),
-        label = "orb2_rotation"
+        label = "orb2y"
     )
 
-    // More dynamic breathing animation for logo with rotation
+    val orb3X by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 25f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(8000, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "orb3x"
+    )
+
+    val orb3Y by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = -30f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(7500, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "orb3y"
+    )
+
+    val orb4X by infiniteTransition.animateFloat(
+        initialValue = -15f,
+        targetValue = 15f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(9000, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "orb4x"
+    )
+
+    val orb4Y by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 40f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(8500, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "orb4y"
+    )
+
+    // Dynamic logo animations - more lively!
     val logoScale by infiniteTransition.animateFloat(
-        initialValue = 0.95f,
-        targetValue = 1.05f, // More pronounced
+        initialValue = 1f,
+        targetValue = 1.15f,
         animationSpec = infiniteRepeatable(
-            animation = tween(2000, easing = EaseInOutCubic), // Faster
+            animation = tween(2000, easing = FastOutSlowInEasing),
             repeatMode = RepeatMode.Reverse
         ),
-        label = "logo_breathing"
+        label = "logo_scale"
     )
 
-    val logoRotation by infiniteTransition.animateFloat(
-        initialValue = -2f,
-        targetValue = 2f,
+    val logoGlow by infiniteTransition.animateFloat(
+        initialValue = 0.4f,
+        targetValue = 0.7f,
         animationSpec = infiniteRepeatable(
-            animation = tween(3000, easing = EaseInOutSine),
+            animation = tween(1800, easing = FastOutSlowInEasing),
             repeatMode = RepeatMode.Reverse
         ),
-        label = "logo_rotation"
+        label = "logo_glow"
+    )
+
+    val logoRotate by infiniteTransition.animateFloat(
+        initialValue = -3f,
+        targetValue = 3f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(3000, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "logo_rotate"
     )
 
     Box(
@@ -123,43 +162,107 @@ fun WelcomeScreen(backStack: SnapshotStateList<AllScreens>) {
             .background(
                 Brush.verticalGradient(
                     colors = listOf(
-                        Color(0xFFFFF5F3),
+                        Color(0xFFFFFAF8),
                         Color(0xFFFFFFFF),
-                        Color(0xFFFFF9F7)
+                        Color(0xFFFFF8F6)
                     )
                 )
             )
     ) {
-        // Floating decorative orbs (background elements) with rotation
+        // Lively floating circles in the background
+        // Circle 1 - Top Left
         Box(
             modifier = Modifier
-                .offset(x = 60.dp, y = (120 + orb1Offset).dp)
-                .size(180.dp)
-                .rotate(orb1Rotation)
-                .blur(80.dp)
+                .offset(x = (orb1X - 80).dp, y = (100 + orb1Y).dp)
+                .size(280.dp)
+                .clip(CircleShape)
+                .blur(100.dp)
                 .background(
                     Brush.radialGradient(
                         colors = listOf(
-                            Color(0xFFFFB8B0).copy(alpha = 0.4f),
-                            Color(0xFFFF8A7E).copy(alpha = 0.2f)
+                            Color(0xFFFF6B6B).copy(alpha = 0.35f),
+                            Color(0xFFFFB3B3).copy(alpha = 0.2f),
+                            Color.Transparent
                         )
                     ),
                     CircleShape
                 )
         )
 
+        // Circle 2 - Top Right
         Box(
             modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .offset(x = (-30).dp, y = (orb2Offset - 100).dp)
+                .align(Alignment.TopEnd)
+                .offset(x = (orb2X + 60).dp, y = (150 + orb2Y).dp)
                 .size(220.dp)
-                .rotate(orb2Rotation)
+                .clip(CircleShape)
                 .blur(90.dp)
                 .background(
                     Brush.radialGradient(
                         colors = listOf(
-                            Color(0xFFFF8A7E).copy(alpha = 0.35f),
-                            Color(0xFFFF6B5F).copy(alpha = 0.15f)
+                            Color(0xFFDC3545).copy(alpha = 0.4f),
+                            Color(0xFFFF9999).copy(alpha = 0.25f),
+                            Color.Transparent
+                        )
+                    ),
+                    CircleShape
+                )
+        )
+
+        // Circle 3 - Bottom Left
+        Box(
+            modifier = Modifier
+                .align(Alignment.BottomStart)
+                .offset(x = (40 + orb3X).dp, y = (-120 + orb3Y).dp)
+                .size(240.dp)
+                .clip(CircleShape)
+                .blur(95.dp)
+                .background(
+                    Brush.radialGradient(
+                        colors = listOf(
+                            Color(0xFFFF4444).copy(alpha = 0.3f),
+                            Color(0xFFFFCCCC).copy(alpha = 0.15f),
+                            Color.Transparent
+                        )
+                    ),
+                    CircleShape
+                )
+        )
+
+        // Circle 4 - Center Right
+        Box(
+            modifier = Modifier
+                .align(Alignment.CenterEnd)
+                .offset(x = (orb4X + 20).dp, y = (orb4Y - 50).dp)
+                .size(200.dp)
+                .clip(CircleShape)
+                .blur(85.dp)
+                .background(
+                    Brush.radialGradient(
+                        colors = listOf(
+                            Color(0xFFFF8080).copy(alpha = 0.35f),
+                            Color(0xFFFFDDDD).copy(alpha = 0.2f),
+                            Color.Transparent
+                        )
+                    ),
+                    CircleShape
+                )
+        )
+
+        // Circle 5 - Bottom Right
+        Box(
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .offset(x = (-orb1X - 40).dp, y = (-200 - orb1Y).dp)
+                .size(180.dp)
+                .clip(CircleShape)
+                .blur(80.dp)
+                .background(
+                    Brush.radialGradient(
+                        colors = listOf(
+                            Color(0xFFDC3545).copy(alpha = 0.3f),
+                            Color(0xFFFFB3B3).copy(alpha = 0.15f),
+                            Color.Transparent
                         )
                     ),
                     CircleShape
@@ -168,45 +271,39 @@ fun WelcomeScreen(backStack: SnapshotStateList<AllScreens>) {
 
         AnimatedVisibility(
             visible = contentVisible,
-            enter = fadeIn(animationSpec = tween(600, easing = EaseOutCubic)) +
+            enter = fadeIn(tween(700, easing = FastOutSlowInEasing)) +
                     scaleIn(
-                        initialScale = 0.9f,
+                        initialScale = 0.88f,
                         animationSpec = spring(
                             dampingRatio = Spring.DampingRatioMediumBouncy,
-                            stiffness = Spring.StiffnessMedium
+                            stiffness = Spring.StiffnessMediumLow
                         )
-                    ) +
-                    slideInVertically(
-                        initialOffsetY = { it / 10 },
-                        animationSpec = spring(
-                            dampingRatio = Spring.DampingRatioMediumBouncy,
-                            stiffness = Spring.StiffnessMedium
-                        )
-                    ),
-            modifier = Modifier.fillMaxSize()
+                    )
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(horizontal = 28.dp),
+                    .padding(horizontal = 24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Spacer(modifier = Modifier.height(100.dp))
+                Spacer(modifier = Modifier.height(90.dp))
 
-                // Modern Logo with glassmorphism effect
+                // Eye-catching animated logo with lovely red halo
                 Box(
                     contentAlignment = Alignment.Center,
-                    modifier = Modifier.padding(vertical = 24.dp)
+                    modifier = Modifier.padding(vertical = 20.dp)
                 ) {
-                    // Soft glow background
+                    // Outer red halo - softer and larger - perfectly circular
                     Box(
                         modifier = Modifier
-                            .size(200.dp)
-                            .blur(50.dp)
+                            .size(260.dp)
+                            .clip(CircleShape)
+                            .blur(90.dp)
                             .background(
                                 Brush.radialGradient(
                                     colors = listOf(
-                                        Color(0xFFFF8A7E).copy(alpha = 0.4f),
+                                        Color(0xFFFF6B6B).copy(alpha = logoGlow * 0.5f),
+                                        Color(0xFFFF4444).copy(alpha = logoGlow * 0.3f),
                                         Color.Transparent
                                     )
                                 ),
@@ -214,29 +311,48 @@ fun WelcomeScreen(backStack: SnapshotStateList<AllScreens>) {
                             )
                     )
 
-                    // Main logo container with glassmorphism and dynamic animations
+                    // Inner red glow - more intense - perfectly circular
                     Box(
                         modifier = Modifier
-                            .scale(logoScale)
-                            .rotate(logoRotation)
-                            .size(160.dp)
+                            .size(220.dp)
                             .clip(CircleShape)
+                            .blur(70.dp)
                             .background(
-                                Brush.linearGradient(
+                                Brush.radialGradient(
                                     colors = listOf(
-                                        Color(0xFFFF6B5F),
-                                        Color(0xFFE74C3C)
-                                    )
-                                )
-                            )
-                            .border(
-                                width = 3.dp,
-                                brush = Brush.linearGradient(
-                                    colors = listOf(
-                                        Color.White.copy(alpha = 0.5f),
-                                        Color.White.copy(alpha = 0.1f)
+                                        Color(0xFFDC3545).copy(alpha = logoGlow),
+                                        Color(0xFFFF6B6B).copy(alpha = logoGlow * 0.6f),
+                                        Color.Transparent
                                     )
                                 ),
+                                CircleShape
+                            )
+                    )
+
+                    // Outer ring with subtle pulsing
+                    Box(
+                        modifier = Modifier
+                            .rotate(logoRotate)
+                            .scale(logoScale)
+                            .size(180.dp)
+                            .border(
+                                width = 3.dp,
+                                color = Color(0xFFFFD6D6).copy(alpha = 0.4f),
+                                shape = CircleShape
+                            )
+                    )
+
+                    // Main logo with rotation and scale
+                    Box(
+                        modifier = Modifier
+                            .rotate(logoRotate)
+                            .scale(logoScale)
+                            .size(150.dp)
+                            .clip(CircleShape)
+                            .background(Color.White)
+                            .border(
+                                width = 4.dp,
+                                color = Color(0xFFFFE5E5).copy(alpha = 0.6f),
                                 shape = CircleShape
                             ),
                         contentAlignment = Alignment.Center
@@ -244,101 +360,77 @@ fun WelcomeScreen(backStack: SnapshotStateList<AllScreens>) {
                         Text(
                             text = "🩸",
                             fontSize = 72.sp,
-                            modifier = Modifier.rotate(-logoRotation) // Counter-rotate emoji to keep it upright
+                            modifier = Modifier.scale(1.05f)
                         )
                     }
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(24.dp))
 
-                // Modern heading with gradient text effect
+                // Text section
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
                         text = "RaktaSewa",
-                        fontSize = 38.sp,
-                        fontWeight = FontWeight.ExtraBold,
+                        fontSize = 36.sp,
+                        fontWeight = FontWeight.Bold,
                         fontFamily = Fonts.ManropeFamily,
                         color = Color(0xFFDC3545),
-                        letterSpacing = (-1).sp
+                        letterSpacing = (-0.5).sp
                     )
 
-                    Spacer(modifier = Modifier.height(6.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
 
                     Text(
                         text = "Your Life-Saving Partner",
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Normal,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium,
                         fontFamily = Fonts.ManropeFamily,
-                        color = Color(0xFF888888),
-                        letterSpacing = 0.sp
+                        color = Color(0xFF666666),
+                        letterSpacing = 0.3.sp
                     )
                 }
 
                 Spacer(modifier = Modifier.weight(1f))
 
-                // Glassmorphic Language Selection Card
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(32.dp))
-                        .background(
-                            Brush.verticalGradient(
-                                colors = listOf(
-                                    Color.White.copy(alpha = 0.9f),
-                                    Color.White.copy(alpha = 0.7f)
-                                )
-                            )
-                        )
-                        .border(
-                            width = 1.5.dp,
-                            brush = Brush.verticalGradient(
-                                colors = listOf(
-                                    Color.White.copy(alpha = 0.8f),
-                                    Color.White.copy(alpha = 0.3f)
-                                )
-                            ),
-                            shape = RoundedCornerShape(32.dp)
-                        )
+                // Modern card
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(28.dp),
+                    color = Color.White,
+                    shadowElevation = 4.dp
                 ) {
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 28.dp, vertical = 44.dp),
+                            .padding(horizontal = 28.dp, vertical = 40.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
                             text = "स्वागतम्",
-                            fontSize = 28.sp,
+                            fontSize = 26.sp,
                             fontWeight = FontWeight.Bold,
                             fontFamily = Fonts.ManropeFamily,
                             color = Color(0xFF1A1A1A),
-                            textAlign = TextAlign.Center,
-                            letterSpacing = (-0.3).sp
+                            textAlign = TextAlign.Center
                         )
 
-                        Spacer(modifier = Modifier.height(6.dp))
+                        Spacer(modifier = Modifier.height(4.dp))
 
                         Text(
                             text = "भाषा चयन गर्नुहोस्",
-                            fontSize = 14.sp,
+                            fontSize = 13.sp,
                             fontWeight = FontWeight.Normal,
                             fontFamily = Fonts.ManropeFamily,
                             color = Color(0xFF888888),
-                            textAlign = TextAlign.Center,
-                            letterSpacing = 0.sp
+                            textAlign = TextAlign.Center
                         )
 
-                        Spacer(modifier = Modifier.height(32.dp))
+                        Spacer(modifier = Modifier.height(28.dp))
 
-                        // Nepali Language Option
-                        UltraModernLanguageButton(
-                            primaryText = "🇳🇵 नेपाली",
-                            secondaryText = "",
-                            flag = "",
-                            accentColor = Color(0xFFDC3545),
-                            isSelected = false,
+                        VibrantLanguageButton(
+                            text = "🇳🇵 नेपाली",
                             backgroundColor = Color(0xFFDC3545)
                         ) {
                             languagePreference.saveLanguage(LanguagePreference.LANGUAGE_NEPALI)
@@ -346,15 +438,10 @@ fun WelcomeScreen(backStack: SnapshotStateList<AllScreens>) {
                             backStack.add(AllScreens.HomeScreen("Nep"))
                         }
 
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(14.dp))
 
-                        // English Language Option
-                        UltraModernLanguageButton(
-                            primaryText = "🇺🇸 English",
-                            secondaryText = "",
-                            flag = "",
-                            accentColor = Color(0xFF1E293B),
-                            isSelected = false,
+                        VibrantLanguageButton(
+                            text = "🇺🇸 English",
                             backgroundColor = Color(0xFF1E293B)
                         ) {
                             languagePreference.saveLanguage(LanguagePreference.LANGUAGE_ENGLISH)
@@ -366,61 +453,57 @@ fun WelcomeScreen(backStack: SnapshotStateList<AllScreens>) {
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                // Bottom tagline
                 Text(
                     text = "Connecting Lives, Saving Lives",
-                    fontSize = 14.sp,
+                    fontSize = 13.sp,
                     fontWeight = FontWeight.Normal,
                     fontFamily = Fonts.ManropeFamily,
                     color = Color(0xFF999999),
-                    textAlign = TextAlign.Center
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
                 )
 
-                Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(40.dp))
             }
         }
     }
 }
 
 @Composable
-fun UltraModernLanguageButton(
-    primaryText: String,
-    secondaryText: String,
-    flag: String,
-    accentColor: Color,
-    isSelected: Boolean,
-    backgroundColor: Color = accentColor,
+fun VibrantLanguageButton(
+    text: String,
+    backgroundColor: Color,
     onClick: () -> Unit
 ) {
     var isPressed by remember { mutableStateOf(false) }
     val interactionSource = remember { MutableInteractionSource() }
 
     val scale by animateFloatAsState(
-        targetValue = if (isPressed) 0.94f else 1f, // More pronounced scale
+        targetValue = if (isPressed) 0.96f else 1f,
         animationSpec = spring(
-            dampingRatio = Spring.DampingRatioLowBouncy, // More bouncy!
-            stiffness = Spring.StiffnessHigh
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessMedium
         ),
-        label = "button_scale"
+        label = "scale"
     )
 
     val elevation by animateDpAsState(
-        targetValue = if (isPressed) 0.dp else 8.dp,
+        targetValue = if (isPressed) 2.dp else 6.dp,
         animationSpec = spring(
             dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = Spring.StiffnessHigh
+            stiffness = Spring.StiffnessMedium
         ),
-        label = "button_elevation"
+        label = "elevation"
     )
 
     Surface(
         modifier = Modifier
             .fillMaxWidth()
             .scale(scale)
-            .height(64.dp),
-        shape = RoundedCornerShape(14.dp),
-        shadowElevation = elevation,
-        color = backgroundColor
+            .height(58.dp),
+        shape = RoundedCornerShape(16.dp),
+        color = backgroundColor,
+        shadowElevation = elevation
     ) {
         Box(
             modifier = Modifier
@@ -436,13 +519,20 @@ fun UltraModernLanguageButton(
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = primaryText,
-                fontSize = 16.sp,
+                text = text,
+                fontSize = 15.sp,
                 fontWeight = FontWeight.SemiBold,
                 fontFamily = Fonts.ManropeFamily,
                 color = Color.White,
-                letterSpacing = 0.sp
+                letterSpacing = 0.2.sp
             )
+        }
+    }
+
+    LaunchedEffect(isPressed) {
+        if (isPressed) {
+            delay(100)
+            isPressed = false
         }
     }
 }
